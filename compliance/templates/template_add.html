@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+
+<div class="container">
+    <h1 class="title">Add a new template</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        <div class="text-center">
+            {% bootstrap_button button_type="submit" content="Submit" %}
+            {% bootstrap_button button_type="reset" content="Cancel" %}
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    {% if template_list %}
+    <h1>Task list</h1>
+    <table class="table table-bordered table-hover" id="template_table">
+        <thead class="table-light">
+            <tr>
+                <th>Task name</th>
+                <th>Due date in days</th>
+                <th>Type of due date</th>
+                <th>Status</th>
+                <th>Department</th>
+                <th>UIIC contact</th>
+                <th>Compliance contact</th>
+                <th>Circular details</th>
+                <th>Type of compliance</th>
+                <th>Circular document</th>
+                <th>Recurring interval</th>
+                <th>Return number</th>
+                <th>Priority</th>
+                <th>Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for template in template_list %}
+            <tr>
+                <td>{{ template.task_name }}</td>
+                <td>{{ template.due_date_days }}</td>
+                <td>{{ template.type_of_due_date }}</td>
+                <td>{{ template.recurring_task_status }}</td>
+                <td>{{ template.department }} </td>
+                <td>{{ template.uiic_contact }}</td>
+                <td>{{ template.compliance_contact }}</td>
+                <td>{{ template.circular_details }}</td>
+                <td>{{ template.type_of_compliance }}</td>
+
+                <td>
+                    {% if template.circular_document %}
+                    <a href="{{ template.circular_document.url }}" target="_blank">{{ template.circular_document }}</a>
+                    {% else %}
+                    No document uploaded
+                    {% endif %}
+
+                </td>
+                <td>{{ template.recurring_interval }}</td>
+                <td>{{ template.return_number }}</td>
+                <td>{{ template.priority }}</td>
+                <td><a href="{% url 'template_edit' template.id %}" class="btn btn-secondary btn-sm">Edit</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endblock content %}
+{% block scripts %}
+<script
+    src="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.2.2/b-3.2.2/b-html5-3.2.2/fc-5.0.4/fh-4.0.1/datatables.min.js"
+    integrity="sha384-tsUGEwojRnoqjP6bzZ+Bpl9YTyUyWkJupPzDwLS5KYjRV58B43iIRkxGOIgBgp/E"
+    crossorigin="anonymous"></script>
+<script>new DataTable('#template_table', {
+        order: [[3, 'desc']]
+    });</script>
+{% endblock scripts %}
