@@ -39,8 +39,10 @@
                             <li><a class="dropdown-item" href="{% url 'template_add' %}">Add new template</a></li>
                         </ul>
                     </li>
-                    <a class="nav-link" href="#">Pending</a>
-                    <a class="nav-link" href="#">Upcoming tasks</a>
+                    <a class="nav-link" href="{% url 'task_list' filter='overdue' %}">Overdue tasks <span class="badge bg-danger">{{ overdue_count }}</span></a>
+					<a class="nav-link" href="{% url 'task_list' filter='due-today' %}">Due today <span class="badge bg-info">{{ due_today_count }}</span></a>
+					<a class="nav-link" href="{% url 'task_list' filter='upcoming' %}">Upcoming tasks <span class="badge bg-success">{{ upcoming_count }}</span></a>
+					
                 </div>
             </div>
         </div>

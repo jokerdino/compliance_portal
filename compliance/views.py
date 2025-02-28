@@ -8,6 +8,8 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now
 from django.urls import reverse_lazy
 from django.http import HttpResponse  # , HttpResponseNotFound
+from django.utils.timezone import localdate
+
 # Create your views here.
 
 
@@ -37,7 +39,7 @@ class TemplateCreateView(generic.CreateView):
     model = Template
     form_class = TemplateForm
     template_name = "template_add.html"
-    # success_url = reverse_lazy("template_list")
+    success_url = reverse_lazy("template_list")
 
     # def form_valid(self, form):
     #     obj = form.save(commit=False)
@@ -62,6 +64,7 @@ class TaskCreateView(generic.CreateView):
     model = Task
     form_class = TaskForm
     template_name = "template_add.html"
+    success_url = reverse_lazy("task_list", kwargs={"filter": "due-today"})
 
 
 class TaskUpdateView(UpdateView):
@@ -69,7 +72,7 @@ class TaskUpdateView(UpdateView):
     form_class = TaskForm
     # TODO: to verify or update the template
     template_name = "template_add.html"
-    success_url = reverse_lazy("task_list")
+    success_url = reverse_lazy("task_list", kwargs={"filter": "due-today"})
 
 
 class TemplateListView(generic.ListView):
@@ -78,7 +81,26 @@ class TemplateListView(generic.ListView):
 
 class TaskListView(generic.ListView):
     model = Task
-
+    #context_object_name = "task_list" 
+    def get_context_data(self, **kwargs):
+        """Pass the current filter type to the template for highlighting active links."""
+        context = super().get_context_data(**kwargs)
+        context["filter_type"] = self.kwargs.get("filter", "pending")
+        return context
+    
+    def get_queryset(self):
+        """Filter tasks based on the 'filter' query parameter."""
+        filter_type = self.kwargs.get("filter", "pending")  # Default to 'pending'
+        today = localdate()
+        
+        if filter_type == "due-today":
+            return Task.objects.filter(due_date=today, current_status="Pending")
+        elif filter_type == "upcoming":           
+            return Task.objects.filter(due_date__gt=today, current_status="Pending")
+        elif filter_type == "overdue":  # Default: pending tasks
+            return Task.objects.filter(due_date__lt=today, current_status="Pending")
+        else:  # Default: pending tasks
+            return Task.objects.filter(current_status="Pending")
 
 def calculate_due_date(due_date_days, type_of_due_date):
     """Calculate due date based on due_date_days and type (calendar/working days)."""
@@ -96,21 +118,28 @@ def calculate_due_date(due_date_days, type_of_due_date):
         return current_date
 
 
-def populate_daily_templates(request):
-    daily_templates = Template.objects.filter(recurring_interval="Daily")
-    daily_tasks = []
-    for template in daily_templates:
+def populate_templates(request, recurring_interval):
+    periodical_templates = Template.objects.filter(recurring_interval=recurring_interval)
+    periodical_tasks = []
+    for template in periodical_templates:
         task_data = model_to_dict(template, exclude=["id"])  # Convert template to dict
         task_data["due_date"] = calculate_due_date(
             template.due_date_days, template.type_of_due_date
         )
+        task_data['current_status'] = 'Pending'
+        periodical_tasks.append(Task(**task_data))  # Create Task instance
 
-        daily_tasks.append(Task(**task_data))  # Create Task instance
+    Task.objects.bulk_create(periodical_tasks)
 
-    Task.objects.bulk_create(daily_tasks)
-
-    return HttpResponse("Daily tasks populated.")
+    return HttpResponse(f"{recurring_interval} tasks populated.")
 
 
-def populate_weekly_templates():
-    pass
+def tasks_count(request):
+    """Returns the count of pending tasks globally."""
+    today = localdate()
+    due_today_count = Task.objects.filter(due_date=today, current_status="Pending").count()
+   
+    overdue_count = Task.objects.filter(due_date__lt=today, current_status="Pending").count()
+    upcoming_count = Task.objects.filter(due_date__gt=today, current_status="Pending").count()
+    pending_count = Task.objects.filter(current_status="Pending").count()
+    return {"pending_tasks_count": pending_count, "due_today_count":due_today_count, "overdue_count":overdue_count, "upcoming_count":upcoming_count}

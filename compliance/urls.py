@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views
 
 # urlpatterns = [path("", views.index, name="index")]
@@ -19,15 +20,17 @@ urlpatterns = [
         name="template_edit",
     ),
     path(
-        "templates/populate_daily/",
-        views.populate_daily_templates,
-        name="populate_daily",
+        "templates/populate_tasks/<recurring_interval>/",
+        views.populate_templates,
+        name="populate_tasks",
     ),
-    path(
-        "tasks/",
-        views.TaskListView.as_view(),
-        name="task_list",
-    ),
+    path("tasks/<filter>/", 
+    views.TaskListView.as_view(), name="task_list",),
+    # path(
+        # "tasks/",
+        # views.TaskListView.as_view(),
+        # name="task_list",
+    # ),
     path(
         "tasks/add/",
         views.TaskCreateView.as_view(),
@@ -39,3 +42,5 @@ urlpatterns = [
         name="task_edit",
     ),
 ]
+
+urlpatterns += [path("", RedirectView.as_view(url="tasks/due-today/", permanent=True))]

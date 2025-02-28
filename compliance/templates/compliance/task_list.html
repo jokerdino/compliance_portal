@@ -2,11 +2,13 @@
 
 {% block content %}
 <div class="container-fluid">
-    {% if task_list %}
-    <h1>Task list</h1>
+   
+	{% if task_list %}
+
+    <h1>{{ filter_type.title }} task list</h1>
     <table class="table table-bordered table-hover" id="template_table">
         <thead class="table-light">
-            <tr>16
+            <tr>
                 <th>Task name</th>
                 <th>Due date</th>
                 <th>Task status</th>
@@ -76,7 +78,7 @@
                 <td>{{ template.get_priority_display }}</td>
                 <td>{{ template.date_of_document_received }}</td>
                 <td>{{ template.date_of_document_forwarded }}</td>
-                <td><a href="{% url 'template_edit' template.id %}" class="btn btn-secondary btn-sm">Edit</a></td>
+                <td><a href="{% url 'task_edit' template.id %}" class="btn btn-secondary btn-sm">Edit</a></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -90,6 +92,11 @@
     integrity="sha384-tsUGEwojRnoqjP6bzZ+Bpl9YTyUyWkJupPzDwLS5KYjRV58B43iIRkxGOIgBgp/E"
     crossorigin="anonymous"></script>
 <script>new DataTable('#template_table', {
+     layout: {
+            top1start: 'pageLength',
+            topStart: 'buttons',
+
+        },
         order: [[3, 'desc']]
     });</script>
 {% endblock scripts %}

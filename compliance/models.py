@@ -174,13 +174,13 @@ class Template(models.Model):
         max_length=100,
         blank=True,
         choices=(
-            ("Daily", "Daily"),
-            ("Weekly", "Weekly"),
-            ("Fortnightly", "Fortnightly"),
-            ("Monthly", "Monthly"),
-            ("Quarterly", "Quarterly"),
-            ("Halfyearly", "Halfyearly"),
-            ("Annual", "Annual"),
+            ("daily", "Daily"),
+            ("weekly", "Weekly"),
+            ("fortnightly", "Fortnightly"),
+            ("monthly", "Monthly"),
+            ("quarterly", "Quarterly"),
+            ("halfyearly", "Halfyearly"),
+            ("annual", "Annual"),
         ),
     )  # repeat every month/week etc
     repeat_month = models.CharField(

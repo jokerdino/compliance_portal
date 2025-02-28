@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container-fluid">
     {% if template_list %}
-    <h1>Task list</h1>
+    <h1>Template list</h1>
     <table class="table table-bordered table-hover" id="template_table">
         <thead class="table-light">
             <tr>
@@ -44,7 +44,7 @@
                     {% endif %}
 
                 </td>
-                <td>{{ template.recurring_interval }}</td>
+                <td>{{ template.get_recurring_interval_display }}</td>
                 <td>{{ template.return_number }}</td>
                 <td>{{ template.priority }}</td>
                 <td><a href="{% url 'template_edit' template.id %}" class="btn btn-secondary btn-sm">Edit</a></td>
@@ -61,6 +61,11 @@
     integrity="sha384-tsUGEwojRnoqjP6bzZ+Bpl9YTyUyWkJupPzDwLS5KYjRV58B43iIRkxGOIgBgp/E"
     crossorigin="anonymous"></script>
 <script>new DataTable('#template_table', {
+   layout: {
+            top1start: 'pageLength',
+            topStart: 'buttons',
+
+        },
         order: [[3, 'desc']]
     });</script>
 {% endblock scripts %}
