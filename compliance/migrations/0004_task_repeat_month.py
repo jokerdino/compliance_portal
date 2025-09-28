@@ -4,15 +4,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('compliance', '0003_template_rename_compliancetopic_task_and_more'),
+        ("compliance", "0003_template_rename_compliancetopic_task_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='repeat_month',
-            field=models.CharField(blank=True, choices=[('January', 'January'), ('February', 'February'), ('March', 'March'), ('April', 'April'), ('May', 'May'), ('June', 'June'), ('July', 'July'), ('August', 'August'), ('September', 'September'), ('October', 'October'), ('November', 'November'), ('December', 'December')], max_length=100),
+            model_name="task",
+            name="repeat_month",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("January", "January"),
+                    ("February", "February"),
+                    ("March", "March"),
+                    ("April", "April"),
+                    ("May", "May"),
+                    ("June", "June"),
+                    ("July", "July"),
+                    ("August", "August"),
+                    ("September", "September"),
+                    ("October", "October"),
+                    ("November", "November"),
+                    ("December", "December"),
+                ],
+                max_length=100,
+            ),
         ),
     ]

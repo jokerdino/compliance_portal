@@ -4,63 +4,169 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='ComplianceTopic',
+            name="ComplianceTopic",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('statement_name', models.CharField(max_length=100)),
-                ('due_date', models.DateField(blank=True, default=None, null=True)),
-                ('due_date_days', models.IntegerField(default=0)),
-                ('type_of_due_date', models.CharField(max_length=100)),
-                ('current_status', models.CharField(choices=[('Pending', 'Pending'), ('Submitted', 'Submitted')], max_length=100)),
-                ('department', models.CharField(max_length=100)),
-                ('uiic_contact', models.CharField(max_length=1000)),
-                ('compliance_contact', models.CharField(max_length=100)),
-                ('circular_details', models.CharField(blank=True, max_length=100)),
-                ('type_of_compliance', models.CharField(blank=True, max_length=100)),
-                ('recurring_interval', models.CharField(blank=True, max_length=100)),
-                ('return_number', models.CharField(blank=True, max_length=100)),
-                ('circular_document', models.FileField(blank=True, upload_to='')),
-                ('inbound_email_communication', models.FileField(blank=True, upload_to='')),
-                ('outbound_email_communication', models.FileField(blank=True, upload_to='')),
-                ('data_document', models.FileField(blank=True, upload_to='')),
-                ('priority', models.IntegerField(blank=True, choices=[(3, 'High'), (2, 'Medium'), (1, 'Low')], default=2)),
-                ('date_of_document_received', models.DateField(blank=True, default=None, null=True)),
-                ('date_of_document_forwarded', models.DateField(blank=True, default=None, null=True)),
-                ('created_by', models.CharField(blank=True, default='', max_length=100)),
-                ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('updated_by', models.CharField(blank=True, default='', max_length=100)),
-                ('updated_on', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("statement_name", models.CharField(max_length=100)),
+                ("due_date", models.DateField(blank=True, default=None, null=True)),
+                ("due_date_days", models.IntegerField(default=0)),
+                ("type_of_due_date", models.CharField(max_length=100)),
+                (
+                    "current_status",
+                    models.CharField(
+                        choices=[("Pending", "Pending"), ("Submitted", "Submitted")],
+                        max_length=100,
+                    ),
+                ),
+                ("department", models.CharField(max_length=100)),
+                ("uiic_contact", models.CharField(max_length=1000)),
+                ("compliance_contact", models.CharField(max_length=100)),
+                ("circular_details", models.CharField(blank=True, max_length=100)),
+                ("type_of_compliance", models.CharField(blank=True, max_length=100)),
+                ("recurring_interval", models.CharField(blank=True, max_length=100)),
+                ("return_number", models.CharField(blank=True, max_length=100)),
+                ("circular_document", models.FileField(blank=True, upload_to="")),
+                (
+                    "inbound_email_communication",
+                    models.FileField(blank=True, upload_to=""),
+                ),
+                (
+                    "outbound_email_communication",
+                    models.FileField(blank=True, upload_to=""),
+                ),
+                ("data_document", models.FileField(blank=True, upload_to="")),
+                (
+                    "priority",
+                    models.IntegerField(
+                        blank=True,
+                        choices=[(3, "High"), (2, "Medium"), (1, "Low")],
+                        default=2,
+                    ),
+                ),
+                (
+                    "date_of_document_received",
+                    models.DateField(blank=True, default=None, null=True),
+                ),
+                (
+                    "date_of_document_forwarded",
+                    models.DateField(blank=True, default=None, null=True),
+                ),
+                (
+                    "created_by",
+                    models.CharField(blank=True, default="", max_length=100),
+                ),
+                ("created_on", models.DateTimeField(auto_now_add=True)),
+                (
+                    "updated_by",
+                    models.CharField(blank=True, default="", max_length=100),
+                ),
+                ("updated_on", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='RecurringTask',
+            name="RecurringTask",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('statement_name', models.CharField(max_length=100)),
-                ('due_date_days', models.IntegerField(default=0)),
-                ('type_of_due_date', models.CharField(blank=True, choices=[('calendar_days', 'Calendar days'), ('working_days', 'Working days')], default='', max_length=100)),
-                ('recurring_task_status', models.CharField(choices=[('active', 'Active'), ('inactive', 'Inactive')], max_length=100)),
-                ('department', models.CharField(max_length=100)),
-                ('uiic_contact', models.CharField(max_length=1000)),
-                ('compliance_contact', models.CharField(max_length=100)),
-                ('circular_details', models.CharField(blank=True, max_length=100)),
-                ('type_of_compliance', models.CharField(blank=True, choices=[('adhoc', 'Ad-hoc'), ('daily', 'Daily'), ('weekly', 'Weekly'), ('fortnightly', 'Fortnightly'), ('monthly', 'Monthly'), ('quarterly', 'Quarterly'), ('half-yearly', 'Half-yearly'), ('annual', 'Annual')], max_length=100)),
-                ('recurring_interval', models.CharField(blank=True, choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('fortnightly', 'Fortnightly'), ('monthly', 'Monthly'), ('quarterly', 'Quarterly'), ('half-yearly', 'Half-yearly'), ('annual', 'Annual')], max_length=100)),
-                ('return_number', models.CharField(blank=True, max_length=100)),
-                ('circular_document', models.FileField(blank=True, upload_to='')),
-                ('priority', models.IntegerField(blank=True, choices=[(3, 'High'), (2, 'Medium'), (1, 'Low')], default=2)),
-                ('created_by', models.CharField(blank=True, default='', max_length=100)),
-                ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('updated_by', models.CharField(blank=True, default='', max_length=100)),
-                ('updated_on', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("statement_name", models.CharField(max_length=100)),
+                ("due_date_days", models.IntegerField(default=0)),
+                (
+                    "type_of_due_date",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("calendar_days", "Calendar days"),
+                            ("working_days", "Working days"),
+                        ],
+                        default="",
+                        max_length=100,
+                    ),
+                ),
+                (
+                    "recurring_task_status",
+                    models.CharField(
+                        choices=[("active", "Active"), ("inactive", "Inactive")],
+                        max_length=100,
+                    ),
+                ),
+                ("department", models.CharField(max_length=100)),
+                ("uiic_contact", models.CharField(max_length=1000)),
+                ("compliance_contact", models.CharField(max_length=100)),
+                ("circular_details", models.CharField(blank=True, max_length=100)),
+                (
+                    "type_of_compliance",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("adhoc", "Ad-hoc"),
+                            ("daily", "Daily"),
+                            ("weekly", "Weekly"),
+                            ("fortnightly", "Fortnightly"),
+                            ("monthly", "Monthly"),
+                            ("quarterly", "Quarterly"),
+                            ("half-yearly", "Half-yearly"),
+                            ("annual", "Annual"),
+                        ],
+                        max_length=100,
+                    ),
+                ),
+                (
+                    "recurring_interval",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("daily", "Daily"),
+                            ("weekly", "Weekly"),
+                            ("fortnightly", "Fortnightly"),
+                            ("monthly", "Monthly"),
+                            ("quarterly", "Quarterly"),
+                            ("half-yearly", "Half-yearly"),
+                            ("annual", "Annual"),
+                        ],
+                        max_length=100,
+                    ),
+                ),
+                ("return_number", models.CharField(blank=True, max_length=100)),
+                ("circular_document", models.FileField(blank=True, upload_to="")),
+                (
+                    "priority",
+                    models.IntegerField(
+                        blank=True,
+                        choices=[(3, "High"), (2, "Medium"), (1, "Low")],
+                        default=2,
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.CharField(blank=True, default="", max_length=100),
+                ),
+                ("created_on", models.DateTimeField(auto_now_add=True)),
+                (
+                    "updated_by",
+                    models.CharField(blank=True, default="", max_length=100),
+                ),
+                ("updated_on", models.DateTimeField(auto_now=True)),
             ],
         ),
     ]

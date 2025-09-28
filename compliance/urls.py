@@ -24,13 +24,11 @@ urlpatterns = [
         views.populate_templates,
         name="populate_tasks",
     ),
-    path("tasks/<filter>/", 
-    views.TaskListView.as_view(), name="task_list",),
-    # path(
-        # "tasks/",
-        # views.TaskListView.as_view(),
-        # name="task_list",
-    # ),
+    path(
+        "tasks/<filter>/",
+        views.TaskListView.as_view(),
+        name="task_list",
+    ),
     path(
         "tasks/add/",
         views.TaskCreateView.as_view(),

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from django.urls import reverse_lazy
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,9 +25,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-^tt(6z4s9-sqhee7vd(x#myc3tz3^a*d)h*mc**itslie=4+%k"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False  # True
 
-ALLOWED_HOSTS = ["0.0.0.0", "192.168.0.158", "*"]
+ALLOWED_HOSTS = ["cfac.uiic.in"]
+
+FORCE_SCRIPT_NAME = "/compliance"
 
 
 # Application definition
@@ -41,6 +44,9 @@ INSTALLED_APPS = [
     "compliance.apps.ComplianceConfig",
     "django_bootstrap5",
     "auditlog",
+    "accounts",
+    "django_tables2",
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -52,6 +58,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "auditlog.middleware.AuditlogMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "uicco.urls"
@@ -67,7 +75,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "compliance.views.tasks_count"
+                "compliance.context_processors.tasks_count",
             ],
         },
     },
@@ -105,6 +113,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = "accounts.CustomUser"
+
+LOGIN_URL = f"{FORCE_SCRIPT_NAME}/accounts/login/"
+LOGIN_REDIRECT_URL = reverse_lazy("template_list")
+LOGOUT_REDIRECT_URL = f"{FORCE_SCRIPT_NAME}/accounts/login/"  # optional fallback
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -121,7 +134,23 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = f"{FORCE_SCRIPT_NAME}/static/"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "staticfiles",
+]
+
+STATIC_ROOT = BASE_DIR / "static_root"
+
+MEDIA_URL = "/media/"
+# MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = Path("/var/www/media/")
+BOOTSTRAP5 = {
+    "css_url": {"url": f"{FORCE_SCRIPT_NAME}/static/bootstrap/css/bootstrap.min.css"},
+    "javascript_url": {
+        "url": f"{FORCE_SCRIPT_NAME}/static/bootstrap/js/bootstrap.bundle.min.js"
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

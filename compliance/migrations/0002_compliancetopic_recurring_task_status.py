@@ -4,16 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('compliance', '0001_initial'),
+        ("compliance", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='compliancetopic',
-            name='recurring_task_status',
-            field=models.CharField(choices=[('active', 'Active'), ('inactive', 'Inactive')], default='active', max_length=100),
+            model_name="compliancetopic",
+            name="recurring_task_status",
+            field=models.CharField(
+                choices=[("active", "Active"), ("inactive", "Inactive")],
+                default="active",
+                max_length=100,
+            ),
             preserve_default=False,
         ),
     ]

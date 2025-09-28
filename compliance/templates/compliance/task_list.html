@@ -2,8 +2,8 @@
 
 {% block content %}
 <div class="container-fluid">
-   
-	{% if task_list %}
+
+    {% if task_list %}
 
     <h1>{{ filter_type.title }} task list</h1>
     <table class="table table-bordered table-hover" id="template_table">
@@ -33,7 +33,7 @@
             <tr>
                 <td>{{ template.task_name }}</td>
                 <td>{{ template.due_date }}</td>
-                <td>{{ template.current_status }}</td>
+                <td>{{ template.get_current_status_display }}</td>
                 <td>{{ template.department }} </td>
                 <td>{{ template.uiic_contact }}</td>
                 <td>{{ template.compliance_contact }}</td>
@@ -92,7 +92,7 @@
     integrity="sha384-tsUGEwojRnoqjP6bzZ+Bpl9YTyUyWkJupPzDwLS5KYjRV58B43iIRkxGOIgBgp/E"
     crossorigin="anonymous"></script>
 <script>new DataTable('#template_table', {
-     layout: {
+        layout: {
             top1start: 'pageLength',
             topStart: 'buttons',
 

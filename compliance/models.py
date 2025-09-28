@@ -1,9 +1,5 @@
-import datetime
-from django import forms
 from django.db import models
 from django.urls import reverse
-
-from django.utils.timezone import now
 
 from auditlog.registry import auditlog
 
@@ -15,12 +11,11 @@ class Task(models.Model):
         blank=True,
         null=True,
         default=None,
-        # widget=forms.DateInput(attrs={"type": "date"}),
     )
     due_date_days = models.IntegerField(default=0)  # in days
     type_of_due_date = models.CharField(max_length=100)  # calendar days or working days
     current_status = models.CharField(
-        max_length=100, choices=(("Pending", "Pending"), ("Submitted", "Submitted"))
+        max_length=100, choices=(("pending", "Pending"), ("submitted", "Submitted"))
     )  # submitted  or pending
     recurring_task_status = models.CharField(
         max_length=100, choices=(("Active", "Active"), ("Inactive", "Inactive"))
@@ -35,14 +30,14 @@ class Task(models.Model):
         max_length=100,
         blank=True,
         choices=(
-            ("Adhoc", "Adhoc"),
-            ("Daily", "Daily"),
-            ("Weekly", "Weekly"),
-            ("Fortnightly", "Fortnightly"),
-            ("Monthly", "Monthly"),
-            ("Quarterly", "Quarterly"),
-            ("Halfyearly", "Halfyearly"),
-            ("Annual", "Annual"),
+            ("adhoc", "Adhoc"),
+            ("daily", "Daily"),
+            ("weekly", "Weekly"),
+            ("fortnightly", "Fortnightly"),
+            ("monthly", "Monthly"),
+            ("quarterly", "Quarterly"),
+            ("halfyearly", "Halfyearly"),
+            ("annual", "Annual"),
         ),
     )  # adhoc/daily/weekly/monthly/quarterly/etc
     recurring_interval = models.CharField(
@@ -80,13 +75,11 @@ class Task(models.Model):
         blank=True,
         null=True,
         default=None,
-        # widget=forms.DateInput(attrs={"type": "date"}),
     )
     date_of_document_forwarded = models.DateField(
         blank=True,
         null=True,
         default=None,
-        # widget=forms.DateInput(attrs={"type": "date"}),
     )
 
     created_by = models.CharField(max_length=100, blank=True, default="")
@@ -94,41 +87,6 @@ class Task(models.Model):
 
     updated_by = models.CharField(max_length=100, blank=True, default="")
     updated_on = models.DateTimeField(auto_now=True)
-
-    # def calculate_due_date(self):
-    #     """Calculate the due date based on type (calendar or working days)."""
-    #     start_date = now().date()  # Use today's date as the base
-
-    #     if self.type_of_due_date == "calendar_days":
-    #         return start_date + datetime.timedelta(days=self.due_date_days)
-    #     else:
-    #         return self.get_working_day_due_date(start_date)
-
-    # def get_working_day_due_date(self, start_date):
-    #     """Calculate the due date considering only working days (excluding weekends)."""
-    #     days_added = 0
-    #     current_date = start_date
-
-    #     while days_added < self.due_date_days:
-    #         current_date += datetime.timedelta(days=1)
-    #         if current_date.weekday() < 5:  # Monday to Friday (0-4)
-    #             days_added += 1
-
-    #     return current_date
-
-    # def save(self, *args, **kwargs):
-    #     """Override save method to set due_date before saving."""
-    #     print(self.due_date_days)
-    #     if self.due_date_days:  # Only calculate if due_date_days is set
-    #         self.due_date = self.calculate_due_date()
-    #     super().save(*args, **kwargs)
-
-    # def create(self, *args, **kwargs):
-    #     """Override create method to set due_date before saving."""
-    #     print(self.due_date_days)
-    #     if self.due_date_days:  # Only calculate if due_date_days is set
-    #         self.due_date = self.calculate_due_date()
-    #     return super().create(*args, **kwargs)
 
     def __str__(self):
         return self.task_name
@@ -143,9 +101,9 @@ class Template(models.Model):
     due_date_days = models.IntegerField(default=0)  # in days
     type_of_due_date = models.CharField(
         max_length=100,
-        default="",
+        default="calendar",
         blank=True,
-        choices=(("Calendar", "Calendar"), ("Working", "Working")),
+        choices=(("calendar", "Calendar"), ("working", "Working")),
     )  # calendar days or working days
     recurring_task_status = models.CharField(
         max_length=100, choices=(("Active", "Active"), ("Inactive", "Inactive"))
@@ -160,14 +118,14 @@ class Template(models.Model):
         max_length=100,
         blank=True,
         choices=(
-            ("Adhoc", "Adhoc"),
-            ("Daily", "Daily"),
-            ("Weekly", "Weekly"),
-            ("Fortnightly", "Fortnightly"),
-            ("Monthly", "Monthly"),
-            ("Quarterly", "Quarterly"),
-            ("Halfyearly", "Halfyearly"),
-            ("Annual", "Annual"),
+            ("adhoc", "Adhoc"),
+            ("daily", "Daily"),
+            ("weekly", "Weekly"),
+            ("fortnightly", "Fortnightly"),
+            ("monthly", "Monthly"),
+            ("quarterly", "Quarterly"),
+            ("halfyearly", "Halfyearly"),
+            ("annual", "Annual"),
         ),
     )  # adhoc/daily/weekly/monthly/quarterly/etc
     recurring_interval = models.CharField(
