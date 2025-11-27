@@ -1,9 +1,8 @@
 import datetime
 
 from django.shortcuts import render
-from .models import Template, Task
-from .forms import TemplateForm, TaskForm
 from django.views import generic
+from django.views.generic import DetailView
 from django.views.generic.edit import UpdateView
 from django.forms.models import model_to_dict
 from django.utils.timezone import now
@@ -12,6 +11,12 @@ from django.http import HttpResponse  # , HttpResponseNotFound
 from django.utils.timezone import localdate
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django_tables2.views import SingleTableView
+
+from .models import Template, Task
+from .forms import TemplateForm, TaskForm
+from .tables import TemplatesTable
+
 # Create your views here.
 
 
@@ -35,6 +40,13 @@ class TemplateUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "template_add.html"
     success_url = reverse_lazy("template_list")
 
+    
+class TemplateDetailView(DetailView):
+    model = Template
+    template_name = "template_add.html"  # adjust path if needed
+    #context_object_name = "deposit"
+
+
 
 class TaskCreateView(LoginRequiredMixin, generic.CreateView):
     model = Task
@@ -51,8 +63,10 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("task_list", kwargs={"filter": "due-today"})
 
 
-class TemplateListView(LoginRequiredMixin, generic.ListView):
+class TemplateListView(LoginRequiredMixin, SingleTableView):
     model = Template
+    table_class = TemplatesTable
+    template_name = "compliance/template_table.html"
 
 
 class TaskListView(LoginRequiredMixin, generic.ListView):
@@ -86,12 +100,15 @@ def calculate_due_date(due_date_days, type_of_due_date):
     if type_of_due_date == "calendar":
         return start_date + datetime.timedelta(days=due_date_days)
     else:
+       
         days_added = 0
+     
         current_date = start_date
         while days_added < due_date_days:
             current_date += datetime.timedelta(days=1)
             if current_date.weekday() < 5:  # Monday-Friday (0-4)
                 days_added += 1
+              
         return current_date
 
 
@@ -105,6 +122,7 @@ def populate_templates(request, recurring_interval):
             task_data["due_date"] = calculate_due_date(
                 template.due_date_days, template.type_of_due_date
             )
+           
             task_data["current_status"] = "pending"
             periodical_tasks.append(Task(**task_data))  # Create Task instance
         Task.objects.bulk_create(periodical_tasks)
@@ -120,7 +138,7 @@ def populate_templates(request, recurring_interval):
         today = localdate()
         month_string = today.strftime("%B")  # Full month name
         annual_templates = Template.objects.filter(
-            recurring_interval__in=["halfyearly", "annual"],
+           recurring_interval__in=["halfyearly", "annual"],
             repeat_month=month_string,
             recurring_task_status="Active",
         )

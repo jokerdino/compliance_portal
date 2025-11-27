@@ -14,6 +14,9 @@ urlpatterns = [
         views.TemplateCreateView.as_view(),
         name="template_add",
     ),
+    path("templates/<int:pk>/",
+    views.TemplateDetailView.as_view(),
+    name="template_detail"),
     path(
         "templates/<int:pk>/edit/",
         views.TemplateUpdateView.as_view(),
