@@ -1,0 +1,168 @@
+{% extends "base_generic.html" %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Task Details: {{ task.task_name }}</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-striped">
+                <tbody>
+                    <tr>
+                        <th>Task Name</th>
+                        <td>{{ task.task_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Due Date</th>
+                        <td>{% if task.due_date %}{{ task.due_date|date:"d M Y" }}{% else %}N/A{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>Due Date (Days)</th>
+                        <td>{{ task.due_date_days }}</td>
+                    </tr>
+                    <tr>
+                        <th>Type of Due Date</th>
+                        <td>{{ task.type_of_due_date }}</td>
+                    </tr>
+                    <tr>
+                        <th>Current Status</th>
+                        <td>{{ task.current_status }}</td>
+                    </tr>
+                    <tr>
+                        <th>Recurring Task Status</th>
+                        <td>{{ task.recurring_task_status }}</td>
+                    </tr>
+                    <tr>
+                        <th>Department</th>
+                        <td>{{ task.department }}</td>
+                    </tr>
+                    <tr>
+                        <th>UIIC Contact</th>
+                        <td>{{ task.uiic_contact }}</td>
+                    </tr>
+                    <tr>
+                        <th>Compliance Contact</th>
+                        <td>{{ task.compliance_contact }}</td>
+                    </tr>
+                    <tr>
+                        <th>Circular Details</th>
+                        <td>{{ task.circular_details }}</td>
+                    </tr>
+                    <tr>
+                        <th>Type of Compliance</th>
+                        <td>{{ task.type_of_compliance }}</td>
+                    </tr>
+                    <tr>
+                        <th>Recurring Interval</th>
+                        <td>{{ task.recurring_interval }}</td>
+                    </tr>
+                    <tr>
+                        <th>Repeat Month</th>
+                        <td>{{ task.repeat_month }}</td>
+                    </tr>
+                    <tr>
+                        <th>Return Number</th>
+                        <td>{{ task.return_number }}</td>
+                    </tr>
+                    <tr>
+                        <th>Priority</th>
+                        <td>{{ task.get_priority_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date of Document Received</th>
+                        <td>{% if task.date_of_document_received %}{{ task.date_of_document_received|date:"d M Y" }}{%
+                            else %}N/A{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>Date of Document Forwarded</th>
+                        <td>{% if task.date_of_document_forwarded %}{{ task.date_of_document_forwarded|date:"d M Y" }}{%
+                            else %}N/A{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>Remarks</th>
+                        <td>{% if task.remarks %}{{ task.remarks.text }}{% else %}No remarks{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>Created By</th>
+                        <td>{{ task.created_by }}</td>
+                    </tr>
+                    <tr>
+                        <th>Created On</th>
+                        <td>{{ task.created_on|date:"d M Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Updated By</th>
+                        <td>{{ task.updated_by }}</td>
+                    </tr>
+                    <tr>
+                        <th>Updated On</th>
+                        <td>{{ task.updated_on|date:"d M Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Circular Document</th>
+                        <td>
+                            {% if task.circular_document %}
+                            <a href="{{ task.circular_document.url }}" target="_blank"
+                                class="btn btn-sm btn-outline-primary">Download</a>
+                            {% else %}N/A{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Inbound Email Communication</th>
+                        <td>
+                            {% if task.inbound_email_communication %}
+                            <a href="{{ task.inbound_email_communication.url }}" target="_blank"
+                                class="btn btn-sm btn-outline-primary">Download</a>
+                            {% else %}N/A{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Outbound Email Communication</th>
+                        <td>
+                            {% if task.outbound_email_communication %}
+                            <a href="{{ task.outbound_email_communication.url }}" target="_blank"
+                                class="btn btn-sm btn-outline-primary">Download</a>
+                            {% else %}N/A{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Data Document</th>
+                        <td>
+                            {% if task.data_document %}
+                            <a href="{{ task.data_document.url }}" target="_blank"
+                                class="btn btn-sm btn-outline-primary">Download</a>
+                            {% else %}N/A{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Existing Remarks</th>
+                        <td>
+                            {% if task.remarks.all %}
+                            {% for remark in task.remarks.all %}
+                            <div class="mb-3 p-3 border rounded bg-light">
+                                <p>{{ remark.text }}</p>
+                                <small class="text-muted">
+                                    Added by: {{ remark.creator_name }}
+                                    on {{ remark.created_at|date:"d M Y H:i" }}
+                                </small>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="text-muted">No remarks yet.</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+            <div class="mt-3 text-end">
+                <a href="{% url 'task_list' 'due-today' %}" class="btn btn-secondary">Back to Task List</a>
+                <a href="{% url 'task_edit' task.pk %}" class="btn btn-primary">Edit Task</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

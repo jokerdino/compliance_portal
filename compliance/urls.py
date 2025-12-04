@@ -28,11 +28,6 @@ urlpatterns = [
         name="populate_tasks",
     ),
     path(
-        "tasks/<filter>/",
-        views.TaskListView.as_view(),
-        name="task_list",
-    ),
-    path(
         "tasks/add/",
         views.TaskCreateView.as_view(),
         name="task_add",
@@ -41,6 +36,16 @@ urlpatterns = [
         "tasks/<int:pk>/edit/",
         views.TaskUpdateView.as_view(),
         name="task_edit",
+    ),
+    path(
+        "tasks/<int:pk>/",
+        views.TaskDetailView.as_view(),
+        name="task_detail",
+    ),
+    path(
+        "tasks/<filter>/",
+        views.TaskListView.as_view(),
+        name="task_list",
     ),
 ]
 

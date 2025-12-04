@@ -1,6 +1,6 @@
 import datetime
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import generic
 from django.views.generic import DetailView
 from django.views.generic.edit import UpdateView
@@ -13,8 +13,8 @@ from django.utils.timezone import localdate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django_tables2.views import SingleTableView
 
-from .models import Template, Task
-from .forms import TemplateForm, TaskForm
+from .models import Template, Task, TaskRemark  
+from .forms import TemplateForm, TaskForm, TaskRemarkFormSet
 from .tables import TemplatesTable
 
 # Create your views here.
@@ -57,9 +57,41 @@ class TaskCreateView(LoginRequiredMixin, generic.CreateView):
 class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
     form_class = TaskForm
-    # TODO: to verify or update the template
-    template_name = "template_add.html"
-    success_url = reverse_lazy("task_list", kwargs={"filter": "due-today"})
+    template_name = "task_edit.html"
+
+    def get_success_url(self):
+        return reverse_lazy("task_detail", args=[self.object.pk])
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        if self.request.POST:
+            data["remarks_formset"] = TaskRemarkFormSet(self.request.POST, instance=self.object, queryset=TaskRemark.objects.none())
+        else:
+            data["remarks_formset"] = TaskRemarkFormSet(instance=self.object, queryset=TaskRemark.objects.none())
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        remarks_formset = context["remarks_formset"]
+        if form.is_valid() and remarks_formset.is_valid():
+            self.object = form.save()
+            remarks = remarks_formset.save(commit=False)
+            for remark in remarks:
+                remark.task = self.object
+                if not remark.created_by:
+                    remark.created_by = self.request.user
+                remark.save()
+           # remarks_formset.instance = self.object
+           # remarks_formset.save()
+            return redirect(self.get_success_url())
+        else:
+            return self.form_invalid(form)
+    
+class TaskDetailView(DetailView):
+    model = Task
+    template_name = "compliance/task_detail.html"
+
+    context_object_name = "task"
 
 
 class TemplateListView(LoginRequiredMixin, SingleTableView):

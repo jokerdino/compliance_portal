@@ -1,0 +1,42 @@
+{% extends "base_generic.html" %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+
+<div class="container">
+    <h1 class="title">Add a new template</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% bootstrap_form form layout="horizontal" %}
+
+        <h5>Existing Remarks</h5>
+        {% if task.remarks.all %}
+        {% for remark in task.remarks.all %}
+        <div class="mb-3 p-3 border rounded bg-light">
+            <p>{{ remark.text }}</p>
+            <small class="text-muted">
+                Added by: {{ remark.creator_name }}
+                on {{ remark.created_at|date:"d M Y H:i" }}
+            </small>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-muted">No remarks yet.</div>
+        {% endif %}
+
+
+        <h5>Remarks</h5>
+        {{ remarks_formset.management_form }}
+        {% for form in remarks_formset %}
+        <div class="mb-3 p-3 border rounded bg-light">
+            {% bootstrap_form form %}
+        </div>
+        {% endfor %}
+        <div class="text-center">
+            {% bootstrap_button button_type="submit" content="Submit" %}
+            {% bootstrap_button button_type="reset" content="Cancel" %}
+        </div>
+    </form>
+</div>
+{% endblock content %}

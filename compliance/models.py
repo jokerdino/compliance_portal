@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from django.conf import settings
 
 from auditlog.registry import auditlog
 
@@ -94,6 +95,25 @@ class Task(models.Model):
     def get_absolute_url(self):
         return reverse("task_detail", args=[str(self.id)])
 
+
+class TaskRemark(models.Model):
+    task = models.ForeignKey(
+        Task, 
+        on_delete=models.CASCADE, 
+        related_name="remarks"
+    )
+    text = models.TextField()
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def creator_name(self):
+        if self.created_by:
+            return self.created_by.username
+        return "Unknown"
+
+    def __str__(self):
+        return f"Remark for {self.task.task_name} at {self.created_at}"
 
 class Template(models.Model):
     task_name = models.CharField(max_length=100)

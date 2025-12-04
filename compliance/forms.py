@@ -1,6 +1,10 @@
 from django import forms
 from django.urls import reverse_lazy
-from .models import Template, Task
+from django.forms import inlineformset_factory
+from .models import Template, Task, TaskRemark
+
+TaskRemarkFormSet = inlineformset_factory(Task, TaskRemark, fields=["text"],extra=1,can_delete=False,widgets={"text": forms.Textarea(attrs={"class": "form-control", "rows": 4})})
+
 
 
 class TemplateForm(forms.ModelForm):
