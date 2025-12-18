@@ -3,8 +3,14 @@ from django.urls import reverse_lazy
 from django.forms import inlineformset_factory
 from .models import Template, Task, TaskRemark
 
-TaskRemarkFormSet = inlineformset_factory(Task, TaskRemark, fields=["text"],extra=1,can_delete=False,widgets={"text": forms.Textarea(attrs={"class": "form-control", "rows": 4})})
-
+TaskRemarkFormSet = inlineformset_factory(
+    Task,
+    TaskRemark,
+    fields=["text"],
+    extra=1,
+    can_delete=False,
+    widgets={"text": forms.Textarea(attrs={"class": "form-control", "rows": 4})},
+)
 
 
 class TemplateForm(forms.ModelForm):
@@ -27,13 +33,17 @@ class TemplateForm(forms.ModelForm):
             "return_number",
             "circular_document",
             "priority",
+            "data_document_template",
         ]
+        widgets = {
+            "repeat_month": forms.CheckboxSelectMultiple(),
+        }
 
 
 class TaskForm(forms.ModelForm):
     due_date = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
-        required=False,
+        required=True,
     )
     date_of_document_received = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
@@ -51,21 +61,43 @@ class TaskForm(forms.ModelForm):
             "task_name",
             "due_date",
             "current_status",
-            # "type_of_due_date",
-            # "recurring_task_status",
             "department",
             "uiic_contact",
             "compliance_contact",
             "circular_details",
             "type_of_compliance",
-            # "recurring_interval",
-            # "repeat_month",
             "return_number",
             "circular_document",
             "inbound_email_communication",
             "outbound_email_communication",
+            "data_document_template",
             "data_document",
+            "priority",
             "date_of_document_received",
             "date_of_document_forwarded",
-            "priority",
         ]
+
+
+class TaskFromTemplateForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ["task_name", "due_date"]
+
+
+class DepartmentTaskForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ["data_document", "inbound_email_communication"]
+
+
+class ComplianceTaskForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ["outbound_email_communication"]
+
+
+class PublicHolidayUploadForm(forms.Form):
+    file = forms.FileField(
+        label="Upload Excel File",
+        help_text="Accepted formats: .xlsx",
+    )
