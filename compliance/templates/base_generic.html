@@ -29,9 +29,27 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
+                    {% with url_name=request.resolver_match.url_name filter_val=request.resolver_match.kwargs.filter %}
+                    {% if request.user.is_authenticated and request.user.user_type in "staff admin" %}
+                    <a class="nav-link" href="{% url 'user_list' %}">User accounts
+                    </a>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                        <a class="nav-link dropdown-toggle {% if url_name == 'public_holiday_list' or url_name == 'upload_public_holidays' %}active{% endif %}"
+                            href="
+                            #" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Public holiday
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'public_holiday_list' %}">Public holiday list</a>
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'upload_public_holidays' %}">Bulk upload public
+                                    holiday</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if url_name == 'template_list' or url_name == 'template_add' %}active{% endif %}"
+                            href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Templates
                         </a>
                         <ul class="dropdown-menu">
@@ -39,20 +57,44 @@
                             <li><a class="dropdown-item" href="{% url 'template_add' %}">Add new template</a></li>
                         </ul>
                     </li>
-                    <a class="nav-link {% if request.resolver_match.url_name == 'task_list' and request.resolver_match.kwargs.filter == 'overdue' %}active{% endif %}"
+
+                    <a class="nav-link {% if url_name == 'task_add' %}active{% endif %}" href="{% url 'task_add' %}">Add
+                        adhoc item
+                    </a>
+                    {% endif %}
+                    <a class="nav-link {% if url_name == 'task_list_submitted' or url_name == 'task_list_filtered_recurrence_submitted' %}active{% endif %}"
+                        href=" {% url 'task_list_submitted' %}">Submitted items
+                    </a>
+
+                    <a class="nav-link {% if filter_val == 'overdue' %}active{% endif %}"
                         href="{% url 'task_list' filter='overdue' %}">Overdue tasks
                         <span class="badge bg-danger">{{ overdue_count }}</span></a>
-                    <a class="nav-link {% if request.resolver_match.url_name == 'task_list' and request.resolver_match.kwargs.filter == 'due-today' %}active{% endif %}"
+                    <a class="nav-link {% if filter_val == 'due-today' %}active{% endif %}"
                         href="{% url 'task_list' filter='due-today' %}">Due today
                         <span class="badge bg-info">{{ due_today_count }}</span></a>
-                    <a class="nav-link {% if request.resolver_match.url_name == 'task_list' and request.resolver_match.kwargs.filter == 'upcoming' %}active{% endif %}"
+                    <a class="nav-link {% if filter_val == 'upcoming' %}active{% endif %}"
                         href="{% url 'task_list' filter='upcoming' %}">Upcoming tasks
                         <span class="badge bg-success">{{ upcoming_count }}</span></a>
-
+                    <a class="nav-link {% if url_name == 'task_list_revision' or url_name == 'task_list_filtered_recurrence_revision' %}active{% endif %}"
+                        href="{% url 'task_list_revision' %}">To be revised
+                        <span class="badge bg-success">{{ revision_count }}</span></a>
+                    {% if request.user.is_authenticated and request.user.user_type in "dept_chief_manager admin" %}
+                    <a class="nav-link {% if url_name == 'task_list_approval_pending' or url_name == 'task_list_filtered_recurrence_approval_pending' %}active{% endif %}"
+                        href="{% url 'task_list_approval_pending' %}">Pending for
+                        approval
+                        <span class="badge bg-success">{{ approval_pending_count }}</span></a>
+                    {% endif %}
+                    {% if request.user.is_authenticated and request.user.user_type in "staff admin" %}
+                    <a class="nav-link {% if url_name == 'task_list_review' or url_name == 'task_list_filtered_recurrence_review' %}active{% endif %}"
+                        href="{% url 'task_list_review' %}">Pending for
+                        review
+                        <span class="badge bg-success">{{ review_count }}</span></a>
+                    {% endif %}
+                    {% endwith %}
                 </div>
             </div>
         </div>
-        <div class="navbar-nav">
+        <div class=" navbar-nav">
             {% if user.is_authenticated %}
 
             <a class="nav-link" href="#">{{ user.username }}</a>

@@ -1,0 +1,227 @@
+{% extends "base_generic.html" %}
+{% load django_bootstrap5 %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+<div class="container my-4">
+
+    <div class="row">
+        <div class="col-12 mb-4 d-flex justify-content-between align-items-center">
+            <h1>Template: {{ template.task_name }}</h1>
+            <div>
+                <a href="{% url 'template_edit' template.pk %}" class="btn btn-warning me-2">
+                    <i class="bi bi-pencil-square"></i> Edit Template
+                </a>
+                <a href="{% url 'task_create_from_template' template.id %}" class="btn btn-primary">
+                    Create Task from Template
+                </a>
+                <a href="{% url 'template_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-list"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- General Details -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">General Details</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+
+                        <dt class="col-sm-4">Task Name</dt>
+                        <dd class="col-sm-8">{{ template.task_name }}</dd>
+
+                        <dt class="col-sm-4">Department</dt>
+                        <dd class="col-sm-8">
+                            {{ template.get_department_display|default:"N/A" }}
+                        </dd>
+
+                        <dt class="col-sm-4">Priority</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge
+                                {% if template.priority == 3 %}bg-danger
+                                {% elif template.priority == 2 %}bg-warning text-dark
+                                {% else %}bg-info text-dark{% endif %}">
+                                {{ template.get_priority_display }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4">Circular / Reference</dt>
+                        <dd class="col-sm-8">
+                            {{ template.circular_details|default:"No details provided." }}
+                        </dd>
+
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance & Recurrence -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-info text-dark">
+                    <h5 class="mb-0">Compliance & Recurrence</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+
+                        <dt class="col-sm-5">Type of Compliance</dt>
+                        <dd class="col-sm-7">
+                            {{ template.get_type_of_compliance_display|default:"Adhoc" }}
+                        </dd>
+
+                        <dt class="col-sm-5">Recurring Status</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge
+                                {% if template.recurring_task_status == 'Active' %}
+                                    bg-success
+                                {% else %}
+                                    bg-danger
+                                {% endif %}">
+                                {{ template.get_recurring_task_status_display }}
+                            </span>
+                        </dd>
+
+                        {% if template.recurring_task_status == "Active" %}
+                        <dt class="col-sm-5">Recurring Interval</dt>
+                        <dd class="col-sm-7">
+                            {{ template.get_recurring_interval_display|default:"N/A" }}
+                        </dd>
+
+                        <dt class="col-sm-5">Repeat Months</dt>
+                        <dd class="col-sm-7">
+                            {% if template.repeat_month.all %}
+                            {% for m in template.repeat_month.all %}
+                            <span class="badge bg-secondary">{{ m }}</span>
+                            {% endfor %}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </dd>
+                        {% endif %}
+
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dates & Contacts -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Dates & Contacts</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+
+                        <dt class="col-sm-5">Due Date (Days)</dt>
+                        <dd class="col-sm-7">
+                            {{ template.due_date_days }}
+                            {% if template.type_of_due_date %}
+                            ({{ template.type_of_due_date }})
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-5">UIIC Contact</dt>
+                        <dd class="col-sm-7">
+                            {{ template.uiic_contact|default:"N/A" }}
+                        </dd>
+
+                        <dt class="col-sm-5">Compliance Contact</dt>
+                        <dd class="col-sm-7">
+                            {{ template.compliance_contact|default:"N/A" }}
+                        </dd>
+
+                        <dt class="col-sm-5">Return Number</dt>
+                        <dd class="col-sm-7">
+                            {{ template.return_number|default:"N/A" }}
+                        </dd>
+
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Attached Documents</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+
+                        <dt class="col-sm-4">Circular Document</dt>
+                        <dd class="col-sm-8">
+                            {% if template.circular_document %}
+                            <a href="{{ template.circular_document.url }}" target="_blank"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-file-earmark-text"></i> View File
+                            </a>
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </dd>
+                        <dt class="col-sm-4">Data format</dt>
+                        <dd class="col-sm-8">
+                            {% if template.data_document_template %}
+                            <a href="{{ template.data_document_template.url }}" target="_blank"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-file-earmark-text"></i> View File
+                            </a>
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </dd>
+
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Audit Log</h5>
+        </div>
+        <div class="card-body small text-muted">
+            <dl class="row mb-0">
+
+                <dt class="col-sm-3">Created By</dt>
+                <dd class="col-sm-9">
+                    {{ template.created_by|default:"System" }}
+                    on {{ template.created_on|date:"F d, Y P" }}
+                </dd>
+
+                <dt class="col-sm-3">Last Updated By</dt>
+                <dd class="col-sm-9">
+                    {{ template.updated_by|default:"System" }}
+                    on {{ template.updated_on|date:"F d, Y P" }}
+                </dd>
+
+            </dl>
+        </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="text-end">
+        <a href="{% url 'template_edit' template.pk %}" class="btn btn-warning me-2">
+            <i class="bi bi-pencil-square"></i> Edit Template
+        </a>
+        <a href="{% url 'task_create_from_template' template.id %}" class="btn btn-primary">
+            Create Task from Template
+        </a>
+        <a href="{% url 'template_list' %}" class="btn btn-secondary">
+            <i class="bi bi-list"></i> Back to List
+        </a>
+    </div>
+
+</div>
+{% endblock %}

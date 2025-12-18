@@ -16,3 +16,32 @@
     </form>
 </div>
 {% endblock content %}
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const recurInterval = document.getElementById("id_recurring_interval");
+        const repeatMonthContainer = document.getElementById("id_repeat_month");
+
+        const allowedValues = ["halfyearly", "annual"];
+
+        function toggleDependentField() {
+            const shouldEnable = allowedValues.includes(recurInterval.value);
+
+            repeatMonthContainer
+                .querySelectorAll("input[type='checkbox']")
+                .forEach(cb => {
+                    cb.disabled = !shouldEnable;
+                    if (!shouldEnable) {
+                        cb.checked = false;
+                    }
+                });
+        }
+
+        recurInterval.addEventListener("change", toggleDependentField);
+
+        // Initial state on page load
+        toggleDependentField();
+    });
+</script>
+{% endblock scripts %}

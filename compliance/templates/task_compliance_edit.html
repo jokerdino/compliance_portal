@@ -1,0 +1,44 @@
+{% extends "base_generic.html" %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+
+<div class="container">
+    <h1 class="title">Add a new task</h1>
+
+    {# ===== GLOBAL ERROR SUMMARY ===== #}
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <strong>Please correct the errors below.</strong>
+
+        {% if form.non_field_errors %}
+        <ul class="mt-2 mb-0">
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% bootstrap_form form layout="horizontal" %}
+
+        {% if remarks_formset %}
+        <h5 class="mt-4 text-secondary">Add New Remarks</h5>
+        {% endif %}
+        {{ remarks_formset.management_form }}
+        {% for formset_form in remarks_formset %}
+        <div class="mb-3 p-3 border rounded bg-white">
+            {% bootstrap_form formset_form layout="vertical" %}
+        </div>
+        {% endfor %}
+        <div class="text-center">
+            {% bootstrap_button button_type="submit" content="Submit" %}
+            {% bootstrap_button button_type="reset" content="Cancel" %}
+        </div>
+
+    </form>
+</div>
+{% endblock content %}
