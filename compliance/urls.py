@@ -14,16 +14,18 @@ urlpatterns = [
         views.TemplateCreateView.as_view(),
         name="template_add",
     ),
-    path("templates/<int:pk>/",
-    views.TemplateDetailView.as_view(),
-    name="template_detail"),
+    path(
+        "templates/<int:pk>/",
+        views.TemplateDetailView.as_view(),
+        name="template_detail",
+    ),
     path(
         "templates/<int:pk>/edit/",
         views.TemplateUpdateView.as_view(),
         name="template_edit",
     ),
     path(
-        "templates/populate_tasks/<recurring_interval>/",
+        "templates/populate_tasks/<str:recurring_interval>/",
         views.populate_templates,
         name="populate_tasks",
     ),
@@ -43,9 +45,85 @@ urlpatterns = [
         name="task_detail",
     ),
     path(
-        "tasks/<filter>/",
+        "tasks/approval/pending/",
+        views.TaskApprovalPendingListView.as_view(),
+        name="task_list_approval_pending",
+    ),
+    # 3. Status AND Recurrence Filter (e.g., tasks/overdue/monthly)
+    path(
+        "tasks/approval/pending/<str:recurrence>/",
+        views.TaskApprovalPendingListView.as_view(),
+        name="task_list_filtered_recurrence_approval_pending",
+    ),
+    path(
+        "tasks/review/pending/",
+        views.TaskReviewListView.as_view(),
+        name="task_list_review",
+    ),
+    # 3. Status AND Recurrence Filter (e.g., tasks/overdue/monthly)
+    path(
+        "tasks/review/pending/<str:recurrence>/",
+        views.TaskReviewListView.as_view(),
+        name="task_list_filtered_recurrence_review",
+    ),
+    path(
+        "tasks/revision/pending/",
+        views.TaskRevisionListView.as_view(),
+        name="task_list_revision",
+    ),
+    # 3. Status AND Recurrence Filter (e.g., tasks/overdue/monthly)
+    path(
+        "tasks/revision/pending/<str:recurrence>/",
+        views.TaskRevisionListView.as_view(),
+        name="task_list_filtered_recurrence_revision",
+    ),
+    path(
+        "tasks/submitted/",
+        views.TaskSubmittedListView.as_view(),
+        name="task_list_submitted",
+    ),
+    # 3. Status AND Recurrence Filter (e.g., tasks/overdue/monthly)
+    path(
+        "tasks/submitted/<str:recurrence>/",
+        views.TaskSubmittedListView.as_view(),
+        name="task_list_filtered_recurrence_submitted",
+    ),
+    path(
+        "tasks/<str:filter>/",
         views.TaskListView.as_view(),
         name="task_list",
+    ),
+    # 3. Status AND Recurrence Filter (e.g., tasks/overdue/monthly)
+    path(
+        "tasks/<str:filter>/<str:recurrence>/",
+        views.TaskListView.as_view(),
+        name="task_list_filtered_recurrence",
+    ),
+    path("seed_month/", views.seed_data_view),
+    path(
+        "holidays_upload/",
+        views.upload_public_holidays,
+        name="upload_public_holidays",
+    ),
+    path(
+        "templates/<int:pk>/",
+        views.TemplateDetailView.as_view(),
+        name="template_detail",
+    ),
+    path(
+        "templates/<int:template_id>/create-task/",
+        views.TaskCreateFromTemplateView.as_view(),
+        name="task_create_from_template",
+    ),
+    path(
+        "public_holiday",
+        views.PublicHolidayList.as_view(),
+        name="public_holiday_list",
+    ),
+    path(
+        "tasks/<int:pk>/revise",
+        views.task_mark_revision,
+        name="task_revise",
     ),
 ]
 
