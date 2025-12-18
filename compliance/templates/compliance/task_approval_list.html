@@ -1,0 +1,58 @@
+{% extends "base_generic.html" %}
+{% load render_table from django_tables2 %}
+{% load django_bootstrap5 %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <ul class="nav nav-tabs mb-4">
+        {% for recurrence in recurrence_choices %}
+        <li class="nav-item">
+            <a class="nav-link {% if recurrence_type == recurrence %}active{% endif %}"
+                href="{% url 'task_list_filtered_recurrence_approval_pending' recurrence=recurrence %}">
+                {{ recurrence|capfirst }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3 d-flex gap-2">
+            <button type="submit" name="action" value="approve" class="btn btn-success">
+                Approve
+            </button>
+
+            <button type="submit" name="action" value="send_back" class="btn btn-warning">
+                Send Back to Pending
+            </button>
+        </div>
+
+        {% render_table table %}
+    </form>
+
+</div>
+{% endblock content %}
+
+{% block scripts %}
+{{ block.super }}
+<script>new DataTable('#templateTable', {
+        order: [[3, 'desc']]
+    });</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const selectAll = document.getElementById("select-all");
+
+        if (!selectAll) return;
+
+        selectAll.addEventListener("change", function () {
+            const checkboxes = document.querySelectorAll(
+                "tbody input[type='checkbox']"
+            );
+
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+        });
+    });
+</script>
+{% endblock scripts %}
