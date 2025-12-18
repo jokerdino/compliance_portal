@@ -28,12 +28,44 @@ from .models import Task
 def tasks_count(request):
     """Returns the count of pending tasks globally."""
     today = localdate()
+    DEPT_RESTRICTED_USERS = {"dept_user", "dept_chief_manager", "dept_dgm"}
+    user = request.user
 
-    counts = Task.objects.filter(current_status="pending").aggregate(
-        pending_tasks_count=Count("id"),
-        due_today_count=Count("id", filter=Q(due_date=today)),
-        overdue_count=Count("id", filter=Q(due_date__lt=today)),
-        upcoming_count=Count("id", filter=Q(due_date__gt=today)),
+    qs = Task.objects.all()
+
+    if user.is_authenticated:
+        if user.user_type in DEPT_RESTRICTED_USERS:
+            qs = qs.filter(department=user.department)
+
+    counts = qs.aggregate(
+        pending_tasks_count=Count(
+            "id",
+            filter=Q(),
+        ),
+        approval_pending_count=Count(
+            "id",
+            filter=Q(current_status="pending_with_chief_manager"),
+        ),
+        revision_count=Count(
+            "id",
+            filter=Q(current_status="revision"),
+        ),
+        review_count=Count(
+            "id",
+            filter=Q(current_status="review"),
+        ),
+        due_today_count=Count(
+            "id",
+            filter=Q(current_status="pending", due_date=today),
+        ),
+        overdue_count=Count(
+            "id",
+            filter=Q(current_status="pending", due_date__lt=today),
+        ),
+        upcoming_count=Count(
+            "id",
+            filter=Q(current_status="pending", due_date__gt=today),
+        ),
     )
 
     return counts
