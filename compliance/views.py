@@ -672,11 +672,10 @@ def calculate_due_date(due_date_days, type_of_due_date):
     start_date = now().date()
 
     if type_of_due_date == "calendar":
-        return start_date + datetime.timedelta(days=due_date_days)
+        return start_date + datetime.timedelta(days=due_date_days - 1)
     else:
-        days_added = 0
-
         current_date = start_date
+        days_added = 1 if is_working_day(current_date) else 0
         while days_added < due_date_days:
             current_date += datetime.timedelta(days=1)
             if is_working_day(current_date):

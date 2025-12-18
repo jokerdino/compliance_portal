@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.conf import settings
+from django.core.validators import MinValueValidator
 
 from auditlog.registry import auditlog
 
@@ -22,7 +23,13 @@ class PublicHoliday(models.Model):
 class Template(models.Model):
     task_name = models.CharField(max_length=100)
 
-    due_date_days = models.IntegerField(default=0)  # in days
+    due_date_days = models.PositiveIntegerField(
+        default=1,
+        null=False,
+        blank=False,
+        validators=[MinValueValidator(1)],
+        help_text="Number of days must be at least 1",
+    )  # in days
     type_of_due_date = models.CharField(
         max_length=100,
         default="calendar",

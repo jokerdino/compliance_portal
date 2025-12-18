@@ -39,6 +39,14 @@ class TemplateForm(forms.ModelForm):
             "repeat_month": forms.CheckboxSelectMultiple(),
         }
 
+    def clean_due_date_days(self):
+        due_date_days = self.cleaned_data.get("due_date_days")
+
+        if due_date_days is None or due_date_days < 1:
+            raise forms.ValidationError("Due date must be at least 1 day.")
+
+        return due_date_days
+
 
 class TaskForm(forms.ModelForm):
     due_date = forms.DateField(
