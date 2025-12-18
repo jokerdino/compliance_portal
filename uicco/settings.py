@@ -116,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = "accounts.CustomUser"
 
 LOGIN_URL = f"{FORCE_SCRIPT_NAME}/accounts/login/"
-LOGIN_REDIRECT_URL = reverse_lazy("template_list")
+LOGIN_REDIRECT_URL = reverse_lazy("task_list", args=["overdue"])
 LOGOUT_REDIRECT_URL = f"{FORCE_SCRIPT_NAME}/accounts/login/"  # optional fallback
 
 # Internationalization
