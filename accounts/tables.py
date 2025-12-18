@@ -12,11 +12,11 @@ class UserTable(tables.Table):
 
     class Meta:
         model = get_user_model()
+        orderable = False
         fields = (
-            "ro_code",
-            "oo_code",
             "username",
             "user_type",
+            "department",
             "reset_password",
             "last_login",
             "view",

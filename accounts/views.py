@@ -28,14 +28,14 @@ class CustomLoginView(LoginView):
         if user.reset_password:
             return reverse_lazy("password_reset")
         return reverse_lazy(
-            "template_list",  # kwargs={"status": "pending"}
+            "task_list", kwargs={"filter": "due-today"}
         )  # Or your normal dashboard
 
 
 class ForcePasswordResetView(LoginRequiredMixin, FormView):
     template_name = "accounts/force_password_reset.html"
     form_class = PasswordChangeForm
-    success_url = reverse_lazy("lease_list")
+    success_url = reverse_lazy("task_list", args=["upcoming"])
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -72,11 +72,11 @@ class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         # Create the user instance but don't save yet
         user = form.save(commit=False)
         user.reset_password = True
-        user.username = user.oo_code
+        #  user.username = user.oo_code
         # ✅ Always set password to 'united', hashed
         user.set_password("united")
-        if user.user_type == "RO":
-            user.is_staff = True
+        # if user.user_type == "RO":
+        #    user.is_staff = True
         user.save()
         return super().form_valid(form)
 

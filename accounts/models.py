@@ -8,8 +8,18 @@ from django.db import models
 # from django.contrib.postgres.fields import ArrayField  # Only if you use PostgreSQL
 
 USERTYPE = [
-    ("RO", "Regional office"),
-    ("OO", "Operating office"),
+    ("staff", "Compliance Staff"),
+    ("admin", "Compliance Admin"),
+    ("viewer", "Compliance Viewer"),
+    ("dept_user", "Department User"),
+    ("dept_chief_manager", "Department Chief Manager"),
+    ("dept_dgm", "Department DGM"),
+]
+DEPARTMENT = [
+    ("cfac", "CFAC"),
+    ("compliance", "Compliance"),
+    ("health", "Health"),
+    ("motor_tp", "Motor TP"),
 ]
 
 
@@ -35,10 +45,6 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    ro_code = models.CharField(max_length=255, blank=True, null=True, default="000100")
-    oo_code = models.CharField(
-        "Operating office code", max_length=255, blank=True, null=True
-    )
     username = models.CharField(max_length=150, unique=True)
     user_type = models.CharField(
         choices=USERTYPE,
@@ -46,11 +52,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         null=True,
     )
+    department = models.CharField(
+        choices=DEPARTMENT, max_length=100, blank=False, null=False
+    )
     reset_password = models.BooleanField(default=False)
     last_login = models.DateTimeField(blank=True, null=True)
-
-    # Use ArrayField only with PostgreSQL
-    #   role = ArrayField(models.CharField(max_length=50), blank=True, default=list)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
