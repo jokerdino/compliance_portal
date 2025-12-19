@@ -33,7 +33,8 @@ class Template(models.Model):
     type_of_due_date = models.CharField(
         max_length=100,
         default="calendar",
-        blank=True,
+        blank=False,
+        null=False,
         choices=(("calendar", "Calendar"), ("working", "Working")),
     )  # calendar days or working days
     recurring_task_status = models.CharField(
@@ -43,13 +44,13 @@ class Template(models.Model):
     uiic_contact = models.CharField(max_length=1000)  # email from uiic
     compliance_contact = models.CharField(max_length=100)  # email to send to compliance
     circular_details = models.CharField(
-        max_length=100, blank=True
+        max_length=100, blank=True, null=True
     )  # circular or regulation or email details
     type_of_compliance = models.CharField(
         max_length=100,
-        blank=True,
+        blank=False,
+        null=False,
         choices=(
-            ("adhoc", "Adhoc"),
             ("daily", "Daily"),
             ("weekly", "Weekly"),
             ("fortnightly", "Fortnightly"),
@@ -61,7 +62,8 @@ class Template(models.Model):
     )  # adhoc/daily/weekly/monthly/quarterly/etc
     recurring_interval = models.CharField(
         max_length=100,
-        blank=True,
+        blank=False,
+        null=False,
         choices=(
             ("daily", "Daily"),
             ("weekly", "Weekly"),
@@ -72,11 +74,11 @@ class Template(models.Model):
             ("annual", "Annual"),
         ),
     )  # repeat every month/week etc
-    repeat_month = models.ManyToManyField(Month, blank=True)
+    repeat_month = models.ManyToManyField(Month, blank=True, null=True)
 
-    return_number = models.CharField(max_length=100, blank=True)
-    circular_document = models.FileField(blank=True)
-    data_document_template = models.FileField(blank=True)
+    return_number = models.CharField(max_length=100, blank=True, null=True)
+    circular_document = models.FileField(blank=True, null=True)
+    data_document_template = models.FileField(blank=True, null=True)
 
     priority = models.IntegerField(
         blank=True,
@@ -113,17 +115,10 @@ class Template(models.Model):
 class Task(models.Model):
     task_name = models.CharField(max_length=100)
     due_date = models.DateField(
-        blank=True,
-        null=True,
-        default=None,
+        blank=False,
+        null=False,
     )
-    # due_date_days = models.IntegerField(default=0, blank=True, null=True)  # in days
-    # type_of_due_date = models.CharField(
-    #     max_length=100,
-    #     default="calendar",
-    #     blank=True,
-    #     choices=(("calendar", "Calendar"), ("working", "Working")),
-    # )  # calendar days or working days
+
     current_status = models.CharField(
         max_length=100,
         default="pending",
@@ -137,14 +132,9 @@ class Task(models.Model):
             ("submitted", "Submitted"),
         ),
     )  # submitted  or pending
-    # recurring_task_status = models.CharField(
-    #     max_length=100,
-    #     choices=(("Active", "Active"), ("Inactive", "Inactive")),
-    #     blank=True,
-    #     null=True,
-    # )  # active or inactive
+
     department = models.CharField(
-        choices=DEPARTMENT, max_length=100, blank=True, null=True
+        choices=DEPARTMENT, max_length=100, blank=False, null=False
     )  # department
     uiic_contact = models.CharField(
         max_length=1000, blank=True, null=True
@@ -157,8 +147,8 @@ class Task(models.Model):
     )  # circular or regulation or email details
     type_of_compliance = models.CharField(
         max_length=100,
-        blank=True,
-        null=True,
+        blank=False,
+        null=False,
         choices=(
             ("adhoc", "Adhoc"),
             ("daily", "Daily"),
@@ -170,21 +160,6 @@ class Task(models.Model):
             ("annual", "Annual"),
         ),
     )  # adhoc/daily/weekly/monthly/quarterly/etc
-    # recurring_interval = models.CharField(
-    #     max_length=100,
-    #     blank=True,
-    #     null=True,
-    #     choices=(
-    #         ("daily", "Daily"),
-    #         ("weekly", "Weekly"),
-    #         ("fortnightly", "Fortnightly"),
-    #         ("monthly", "Monthly"),
-    #         ("quarterly", "Quarterly"),
-    #         ("halfyearly", "Halfyearly"),
-    #         ("annual", "Annual"),
-    #     ),
-    # )  # repeat every month/week etc
-    # repeat_month = models.ManyToManyField(Month, blank=True)
 
     return_number = models.CharField(max_length=100, blank=True, null=True)
     circular_document = models.FileField(blank=True, null=True)
@@ -209,7 +184,6 @@ class Task(models.Model):
         default=None,
     )
 
-    # created_by = models.CharField(max_length=100, blank=True, default="")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="tasks_created",
@@ -219,7 +193,6 @@ class Task(models.Model):
     )
     created_on = models.DateTimeField(auto_now_add=True)
 
-    # updated_by = models.CharField(max_length=100, blank=True, null=True, default="")
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="tasks_updated",
@@ -230,7 +203,11 @@ class Task(models.Model):
     updated_on = models.DateTimeField(auto_now=True, null=True)
 
     template = models.ForeignKey(
-        Template, related_name="template", on_delete=models.PROTECT, null=True
+        Template,
+        related_name="template",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
     )
 
     def __str__(self):

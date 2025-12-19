@@ -86,12 +86,6 @@ class TaskForm(forms.ModelForm):
         ]
 
 
-class TaskFromTemplateForm(forms.ModelForm):
-    class Meta:
-        model = Task
-        fields = ["task_name", "due_date"]
-
-
 class DepartmentTaskForm(forms.ModelForm):
     class Meta:
         model = Task

@@ -31,7 +31,7 @@ from .forms import (
     TaskRemarkFormSet,
     DepartmentTaskForm,
     PublicHolidayUploadForm,
-    TaskFromTemplateForm,
+    # TaskFromTemplateForm,
     ComplianceTaskForm,
 )
 from .tables import TemplatesTable, TaskTable, TaskApprovalTable, PublicHolidayTable
