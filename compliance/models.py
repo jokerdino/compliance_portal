@@ -74,7 +74,7 @@ class Template(models.Model):
             ("annual", "Annual"),
         ),
     )  # repeat every month/week etc
-    repeat_month = models.ManyToManyField(Month, blank=True, null=True)
+    repeat_month = models.ManyToManyField(Month, blank=True)
 
     return_number = models.CharField(max_length=100, blank=True, null=True)
     circular_document = models.FileField(blank=True, null=True)
@@ -116,7 +116,7 @@ class Task(models.Model):
     task_name = models.CharField(max_length=100)
     due_date = models.DateField(
         blank=False,
-        null=False,
+        null=True,
     )
 
     current_status = models.CharField(
@@ -134,7 +134,7 @@ class Task(models.Model):
     )  # submitted  or pending
 
     department = models.CharField(
-        choices=DEPARTMENT, max_length=100, blank=False, null=False
+        choices=DEPARTMENT, max_length=100, blank=False, null=True
     )  # department
     uiic_contact = models.CharField(
         max_length=1000, blank=True, null=True
