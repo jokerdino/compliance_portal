@@ -44,7 +44,7 @@ def tasks_count(request):
         ),
         approval_pending_count=Count(
             "id",
-            filter=Q(current_status="pending_with_chief_manager"),
+            filter=Q(current_status="to_be_approved"),
         ),
         revision_count=Count(
             "id",

@@ -232,7 +232,7 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
                 inbound_mail = form.cleaned_data.get("inbound_email_communication")
 
                 if data_doc and inbound_mail:
-                    self.object.current_status = "pending_with_chief_manager"
+                    self.object.current_status = "to_be_approved"
 
             if self.request.user.user_type in self.COMPLIANCE_DEPT_USERS:
                 outbound_email = form.cleaned_data.get("outbound_email_communication")
@@ -384,7 +384,7 @@ class TaskSubmittedListView(LoginRequiredMixin, SingleTableView):
     def get_context_data(self, **kwargs):
         """Pass the current filter type to the template for highlighting active links."""
         context = super().get_context_data(**kwargs)
-        # context["filter_type"] = self.kwargs.get("filter", "pending_with_chief_manager")
+        # context["filter_type"] = self.kwargs.get("filter", "to_be_approved")
         # Determine the current recurrence filter (default: all)
         context["recurrence_type"] = self.kwargs.get("recurrence", "all")
         context["recurrence_choices"] = self.RECURRENCE_CHOICES
@@ -395,7 +395,7 @@ class TaskSubmittedListView(LoginRequiredMixin, SingleTableView):
         """Filter tasks based on the 'filter' query parameter."""
 
         # filter_type = self.kwargs.get(
-        #     "filter", "pending_with_chief_manager"
+        #     "filter", "to_be_approved"
         # )  # Default to 'pending'
         recurrence_type = self.kwargs.get("recurrence", "all")
         # today = localdate()
@@ -438,7 +438,7 @@ class TaskRevisionListView(LoginRequiredMixin, SingleTableView):
     def get_context_data(self, **kwargs):
         """Pass the current filter type to the template for highlighting active links."""
         context = super().get_context_data(**kwargs)
-        # context["filter_type"] = self.kwargs.get("filter", "pending_with_chief_manager")
+        # context["filter_type"] = self.kwargs.get("filter", "to_be_approved")
         # Determine the current recurrence filter (default: all)
         context["recurrence_type"] = self.kwargs.get("recurrence", "all")
         context["recurrence_choices"] = self.RECURRENCE_CHOICES
@@ -449,7 +449,7 @@ class TaskRevisionListView(LoginRequiredMixin, SingleTableView):
         """Filter tasks based on the 'filter' query parameter."""
 
         # filter_type = self.kwargs.get(
-        #     "filter", "pending_with_chief_manager"
+        #     "filter", "to_be_approved"
         # )  # Default to 'pending'
         recurrence_type = self.kwargs.get("recurrence", "all")
         # today = localdate()
@@ -492,7 +492,7 @@ class TaskApprovalPendingListView(LoginRequiredMixin, SingleTableView):
     def get_context_data(self, **kwargs):
         """Pass the current filter type to the template for highlighting active links."""
         context = super().get_context_data(**kwargs)
-        # context["filter_type"] = self.kwargs.get("filter", "pending_with_chief_manager")
+        # context["filter_type"] = self.kwargs.get("filter", "to_be_approved")
         # Determine the current recurrence filter (default: all)
         context["recurrence_type"] = self.kwargs.get("recurrence", "all")
         context["recurrence_choices"] = self.RECURRENCE_CHOICES
@@ -503,7 +503,7 @@ class TaskApprovalPendingListView(LoginRequiredMixin, SingleTableView):
         """Filter tasks based on the 'filter' query parameter."""
 
         # filter_type = self.kwargs.get(
-        #     "filter", "pending_with_chief_manager"
+        #     "filter", "to_be_approved"
         # )  # Default to 'pending'
         recurrence_type = self.kwargs.get("recurrence", "all")
         # today = localdate()
@@ -515,7 +515,7 @@ class TaskApprovalPendingListView(LoginRequiredMixin, SingleTableView):
             qs = qs.filter(department=user.department)
 
         qs = qs.filter(
-            current_status="pending_with_chief_manager"
+            current_status="to_be_approved"
         )  # --- Step 3: Recurrence Type Filtering ---
         if recurrence_type != "all":
             # Note: The model field is 'type_of_compliance'
@@ -549,7 +549,7 @@ class TaskApprovalPendingListView(LoginRequiredMixin, SingleTableView):
 
         tasks = Task.objects.filter(
             id__in=task_ids,
-            current_status="pending_with_chief_manager",
+            current_status="to_be_approved",
         )
 
         updated_count = 0
@@ -587,7 +587,7 @@ class TaskReviewListView(LoginRequiredMixin, SingleTableView):
     def get_context_data(self, **kwargs):
         """Pass the current filter type to the template for highlighting active links."""
         context = super().get_context_data(**kwargs)
-        # context["filter_type"] = self.kwargs.get("filter", "pending_with_chief_manager")
+        # context["filter_type"] = self.kwargs.get("filter", "to_be_approved")
         # Determine the current recurrence filter (default: all)
         context["recurrence_type"] = self.kwargs.get("recurrence", "all")
         context["recurrence_choices"] = self.RECURRENCE_CHOICES
@@ -598,7 +598,7 @@ class TaskReviewListView(LoginRequiredMixin, SingleTableView):
         """Filter tasks based on the 'filter' query parameter."""
 
         # filter_type = self.kwargs.get(
-        #     "filter", "pending_with_chief_manager"
+        #     "filter", "to_be_approved"
         # )  # Default to 'pending'
         recurrence_type = self.kwargs.get("recurrence", "all")
         # today = localdate()

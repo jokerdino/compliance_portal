@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
                     models.CharField(
                         choices=[
                             ("pending", "Pending"),
-                            ("pending_with_chief_manager", "To be approved"),
+                            ("to_be_approved", "To be approved"),
                             ("review", "In review"),
                             ("revision", "Revised document to be uploaded"),
                             ("submitted", "Submitted"),
