@@ -15,12 +15,22 @@ USERTYPE = [
     ("dept_chief_manager", "Department Chief Manager"),
     ("dept_dgm", "Department DGM"),
 ]
-DEPARTMENT = [
-    ("cfac", "CFAC"),
-    ("compliance", "Compliance"),
-    ("health", "Health"),
-    ("motor_tp", "Motor TP"),
-]
+# DEPARTMENT = [
+#     ("cfac", "CFAC"),
+#     ("compliance", "Compliance"),
+#     ("health", "Health"),
+#     ("motor_tp", "Motor TP"),
+# ]
+
+
+class Department(models.Model):
+    department_name = models.CharField(blank=False, null=False, unique=True)
+
+    def __str__(self):
+        return self.department_name
+
+    class Meta:
+        ordering = ["department_name"]
 
 
 class CustomUserManager(BaseUserManager):
@@ -52,9 +62,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         null=True,
     )
-    department = models.CharField(
-        choices=DEPARTMENT, max_length=100, blank=False, null=False
-    )
+    department = models.ForeignKey(Department, on_delete=models.PROTECT, null=True)
     reset_password = models.BooleanField(default=False)
     last_login = models.DateTimeField(blank=True, null=True)
 
@@ -68,3 +76,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+
+    class Meta:
+        ordering = ["department", "user_type", "username"]

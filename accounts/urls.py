@@ -8,6 +8,9 @@ from .views import (
     UserUpdateView,
     UploadExcelView,
     ForcePasswordResetView,
+    DepartmentCreateView,
+    DepartmentListView,
+    DepartmentUpdateView,
 )
 
 urlpatterns = [
@@ -23,4 +26,11 @@ urlpatterns = [
         name="password_reset",
     ),
     path("bulk_upload/", UploadExcelView.as_view(), name="bulk_upload"),
+    path("department/add", DepartmentCreateView.as_view(), name="department_add"),
+    path("department/", DepartmentListView.as_view(), name="department_list"),
+    path(
+        "department/<int:pk>/edit",
+        DepartmentUpdateView.as_view(),
+        name="department_update",
+    ),
 ]

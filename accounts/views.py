@@ -12,11 +12,38 @@ from django.contrib.auth.hashers import make_password
 
 from django_tables2.views import SingleTableView
 
-from .tables import UserTable
+from .tables import UserTable, DepartmentTable
 from .forms import CustomLoginForm, UserCreateForm, UserUpdateForm, UploadExcelForm
-
+from .models import Department
 
 User = get_user_model()
+
+
+class DepartmentCreateView(CreateView):
+    model = Department
+    fields = ["department_name"]
+    success_url = reverse_lazy("department_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Add new department"
+        return context
+
+
+class DepartmentUpdateView(UpdateView):
+    model = Department
+    fields = ["department_name"]
+    success_url = reverse_lazy("department_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Update department"
+        return context
+
+
+class DepartmentListView(SingleTableView):
+    model = Department
+    table_class = DepartmentTable
 
 
 class CustomLoginView(LoginView):

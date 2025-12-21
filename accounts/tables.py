@@ -5,6 +5,26 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from .models import Department
+
+
+class DepartmentTable(tables.Table):
+    edit = tables.Column(empty_values=(), orderable=False)
+
+    class Meta:
+        model = Department
+        orderable = False
+        fields = ("department_name", "edit")
+        template_name = "django_tables2/bootstrap5.html"
+        attrs = {
+            "class": "table table-bordered table-striped table-hover",
+            "id": "DepartmentTable",
+        }
+
+    def render_edit(self, record):
+        url = reverse("department_update", args=[record.pk])
+        return format_html('<a class="btn btn-sm btn-warning" href="{}">Edit</a>', url)
+
 
 class UserTable(tables.Table):
     view = tables.Column(empty_values=(), orderable=False)

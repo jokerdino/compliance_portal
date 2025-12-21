@@ -35,11 +35,23 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
+                    {% with url_name=request.resolver_match.url_name filter_val=request.resolver_match.kwargs.filter %}
                     <a class="nav-link" href="{% url 'task_list_approval_pending' %}">Tasks list
                     </a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if url_name == 'department_list' or url_name == 'department_add' %}active{% endif %}"
+                            href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Department
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'department_list' %}">Department list</a></li>
+                            <li><a class="dropdown-item" href="{% url 'department_add' %}">Add new department</a></li>
+                        </ul>
+                    </li>
                     <a class="nav-link" href="{% url 'user_list' %}">User list</a>
                     <a class="nav-link" href="{% url 'user_create' %}">Add new user</a>
-                    <a class="nav-link" href="{% url 'bulk_upload' %}">Bulk upload users</a>
+                    {# <a class="nav-link" href="{% url 'bulk_upload' %}">Bulk upload users</a> #}
+                    {% endswith %}
                 </div>
             </div>
         </div>
