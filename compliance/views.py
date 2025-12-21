@@ -699,12 +699,14 @@ def populate_templates(request, recurring_interval):
                     "recurring_task_status",
                     "recurring_interval",
                     "repeat_month",
+                    "department",
                 ],
             )  # Convert template to dict
             task_data["due_date"] = calculate_due_date(
                 template.due_date_days, template.type_of_due_date
             )
             task_data["created_by_id"] = 1
+            task_data["department_id"] = template.department_id
             task_data["current_status"] = "pending"
             task_data["template"] = template
             periodical_tasks.append(Task(**task_data))  # Create Task instance

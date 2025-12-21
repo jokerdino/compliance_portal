@@ -5,7 +5,7 @@ from django.core.validators import MinValueValidator
 
 from auditlog.registry import auditlog
 
-from accounts.models import DEPARTMENT
+from accounts.models import Department
 
 
 class Month(models.Model):
@@ -40,7 +40,7 @@ class Template(models.Model):
     recurring_task_status = models.CharField(
         max_length=100, choices=(("Active", "Active"), ("Inactive", "Inactive"))
     )  # active or inactive
-    department = models.CharField(choices=DEPARTMENT)  # department
+    department = models.ForeignKey(Department, on_delete=models.PROTECT)
     uiic_contact = models.CharField(max_length=1000)  # email from uiic
     compliance_contact = models.CharField(max_length=100)  # email to send to compliance
     circular_details = models.CharField(
@@ -133,9 +133,7 @@ class Task(models.Model):
         ),
     )  # submitted  or pending
 
-    department = models.CharField(
-        choices=DEPARTMENT, max_length=100, blank=False, null=True
-    )  # department
+    department = models.ForeignKey(Department, on_delete=models.PROTECT)
     uiic_contact = models.CharField(
         max_length=1000, blank=True, null=True
     )  # email from uiic

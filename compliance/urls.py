@@ -99,7 +99,7 @@ urlpatterns = [
         views.TaskListView.as_view(),
         name="task_list_filtered_recurrence",
     ),
-    path("seed_month/", views.seed_data_view),
+    path("seed_month/", views.seed_data_view, name="seed_month"),
     path(
         "holidays_upload/",
         views.upload_public_holidays,
