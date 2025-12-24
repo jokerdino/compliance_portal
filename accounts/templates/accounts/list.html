@@ -12,6 +12,11 @@
 {% block scripts %}
 {{ block.super }}
 <script>new DataTable('#UserTable', {
+        layout: {
+            topStart: {
+                buttons: ['copy', 'csv', 'excel', 'pdf']
+            },
+        },
 
         order: [[2, 'asc'], [1, 'asc']],
     });</script>

@@ -12,7 +12,11 @@
 {% block scripts %}
 {{ block.super }}
 <script>new DataTable('#DepartmentTable', {
-        // order: [[2, 'desc']],
+        layout: {
+            topStart: {
+                buttons: ['copy', 'csv', 'excel', 'pdf']
+            },
+        },
     });</script>
 
 {% endblock scripts %}
