@@ -225,7 +225,7 @@
                 {% if task.remarks.all %}
                 {% for remark in task.remarks.all %}
                 <div class="mb-3 p-3 border-start border-4 border-info rounded bg-light">
-                    <p class="mb-1 word-wrap">{{ remark.text }}</p>
+                    <p class="mb-1 text-word-wrap">{{ remark.text }}</p>
                     <small class="text-muted">
                         Added by: <strong>{{ remark.creator_name }}</strong> on
                         {{ remark.created_at|date:"d M Y H:i" }}
@@ -242,7 +242,7 @@
 
 {% block extra_css %}
 <style>
-    .word-wrap {
+    .text-word-wrap {
         white-space: pre-wrap;
     }
 </style>

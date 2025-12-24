@@ -13,6 +13,7 @@ from django.utils.timezone import now
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse, HttpResponseForbidden  # , HttpResponseNotFound
 from django.utils.timezone import localdate
+from django.db.models import Prefetch
 
 
 from django.contrib.contenttypes.models import ContentType
@@ -62,6 +63,11 @@ class TemplateCreateView(LoginRequiredMixin, generic.CreateView):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        form.instance.updated_by = self.request.user
+        return super().form_valid(form)
+
 
 class TemplateUpdateView(LoginRequiredMixin, UpdateView):
     model = Template
@@ -74,10 +80,17 @@ class TemplateUpdateView(LoginRequiredMixin, UpdateView):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
+    def form_valid(self, form):
+        form.instance.updated_by = self.request.user
+        return super().form_valid(form)
+
 
 class TemplateDetailView(DetailView):
     model = Template
     template_name = "template_detail.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("created_by", "updated_by")
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.user_type not in {"viewer", "admin"}:
@@ -147,6 +160,26 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
     COMPLIANCE_DEPT_USERS = {"admin"}
     ALLOWED_STATUSES = {"pending", "revision"}
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "created_by",
+                "updated_by",
+                "department",
+                "template",
+            )
+            .prefetch_related(
+                Prefetch(
+                    "remarks",
+                    queryset=TaskRemark.objects.select_related("created_by").order_by(
+                        "created_at"
+                    ),
+                )
+            )
+        )
 
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -271,6 +304,26 @@ class TaskDetailView(DetailView):
 
     context_object_name = "task"
 
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "created_by",
+                "updated_by",
+                "department",
+                "template",
+            )
+            .prefetch_related(
+                Prefetch(
+                    "remarks",
+                    queryset=TaskRemark.objects.select_related("created_by").order_by(
+                        "created_at"
+                    ),
+                )
+            )
+        )
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -280,7 +333,10 @@ class TaskDetailView(DetailView):
         COMPLIANCE_DEPT_USERS = {"admin"}
 
         qs = (
-            Task.objects.filter(template_id=task.template_id)
+            Task.objects.select_related(
+                "department",
+            )
+            .filter(template_id=task.template_id)
             .exclude(id=task.id)
             .order_by("-id")
         )
@@ -308,11 +364,10 @@ class TaskDetailView(DetailView):
         )
 
         context["can_edit"] = (
-            (
-                user.user_type in DEPT_RESTRICTED_USERS
-                and task.current_status in {"pending", "revision"}
-            )
-            or (user.user_type in COMPLIANCE_DEPT_USERS)
+            user.user_type in DEPT_RESTRICTED_USERS
+            and task.current_status in {"pending", "revision"}
+        ) or (
+            user.user_type in COMPLIANCE_DEPT_USERS
             and task.current_status not in {"submitted"}
         )
         return context
@@ -328,6 +383,15 @@ class TemplateListView(LoginRequiredMixin, SingleTableView):
         if request.user.user_type not in {"viewer", "admin"}:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "department",
+            )
+        )
 
 
 class TaskListView(LoginRequiredMixin, SingleTableView):
@@ -366,7 +430,7 @@ class TaskListView(LoginRequiredMixin, SingleTableView):
         today = localdate()
         user = self.request.user
 
-        qs = Task.objects.all()
+        qs = Task.objects.select_related("department")
 
         if user.user_type in self.DEPT_RESTRICTED_USERS:
             qs = qs.filter(department=user.department)
@@ -427,7 +491,7 @@ class TaskSubmittedListView(LoginRequiredMixin, SingleTableView):
         # today = localdate()
         user = self.request.user
 
-        qs = Task.objects.all()
+        qs = Task.objects.select_related("department")
 
         if user.user_type in self.DEPT_RESTRICTED_USERS:
             qs = qs.filter(department=user.department)
@@ -481,7 +545,7 @@ class TaskRevisionListView(LoginRequiredMixin, SingleTableView):
         # today = localdate()
         user = self.request.user
 
-        qs = Task.objects.all()
+        qs = Task.objects.select_related("department")
 
         if user.user_type in self.DEPT_RESTRICTED_USERS:
             qs = qs.filter(department=user.department)
@@ -535,7 +599,7 @@ class TaskApprovalPendingListView(LoginRequiredMixin, SingleTableView):
         # today = localdate()
         user = self.request.user
 
-        qs = Task.objects.all()
+        qs = Task.objects.select_related("department")
 
         if user.user_type in self.DEPT_RESTRICTED_USERS:
             qs = qs.filter(department=user.department)
@@ -631,7 +695,7 @@ class TaskReviewListView(LoginRequiredMixin, SingleTableView):
         # today = localdate()
         user = self.request.user
 
-        qs = Task.objects.all()
+        qs = Task.objects.select_related("department")
 
         if user.user_type in self.DEPT_RESTRICTED_USERS:
             qs = qs.filter(department=user.department)
