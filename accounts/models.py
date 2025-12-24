@@ -8,19 +8,12 @@ from django.db import models
 # from django.contrib.postgres.fields import ArrayField  # Only if you use PostgreSQL
 
 USERTYPE = [
-    ("staff", "Compliance Staff"),
-    ("admin", "Compliance Admin"),
-    ("viewer", "Compliance Viewer"),
+    ("admin", "Admin"),
+    ("viewer", "Viewer"),
     ("dept_user", "Department User"),
-    ("dept_chief_manager", "Department Chief Manager"),
+    ("dept_agm", "Department AGM"),
     ("dept_dgm", "Department DGM"),
 ]
-# DEPARTMENT = [
-#     ("cfac", "CFAC"),
-#     ("compliance", "Compliance"),
-#     ("health", "Health"),
-#     ("motor_tp", "Motor TP"),
-# ]
 
 
 class Department(models.Model):

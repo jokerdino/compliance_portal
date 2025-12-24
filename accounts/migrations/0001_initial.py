@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
                             ("admin", "Compliance Admin"),
                             ("viewer", "Compliance Viewer"),
                             ("dept_user", "Department User"),
-                            ("dept_chief_manager", "Department Chief Manager"),
+                            ("dept_agm", "Department Chief Manager"),
                             ("dept_dgm", "Department DGM"),
                         ],
                         max_length=50,
