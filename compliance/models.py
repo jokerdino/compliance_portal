@@ -43,6 +43,9 @@ class Template(models.Model):
     department = models.ForeignKey(Department, on_delete=models.PROTECT)
     uiic_contact = models.CharField(max_length=1000)  # email from uiic
     compliance_contact = models.CharField(max_length=100)  # email to send to compliance
+    circular_url = models.URLField(
+        verbose_name="Source circular URL", max_length=1000, blank=True, null=True
+    )
     circular_details = models.CharField(
         max_length=100, blank=True, null=True
     )  # circular or regulation or email details
@@ -77,8 +80,12 @@ class Template(models.Model):
     repeat_month = models.ManyToManyField(Month, blank=True)
 
     return_number = models.CharField(max_length=100, blank=True, null=True)
-    circular_document = models.FileField(blank=True, null=True)
-    data_document_template = models.FileField(blank=True, null=True)
+    circular_document = models.FileField(
+        blank=True, null=True, upload_to="circulars_document/"
+    )
+    data_document_template = models.FileField(
+        blank=True, null=True, upload_to="data_document_template/"
+    )
 
     priority = models.IntegerField(
         blank=True,
@@ -108,7 +115,7 @@ class Template(models.Model):
         return self.task_name
 
     def get_absolute_url(self):
-        return reverse("template_detail", args=[str(self.id)])
+        return reverse("template_detail", kwargs={"pk": self.pk})
 
 
 # Create your models here.
@@ -140,6 +147,9 @@ class Task(models.Model):
     compliance_contact = models.CharField(
         max_length=100, blank=True, null=True
     )  # email to send to compliance
+    circular_url = models.URLField(
+        verbose_name="Source circular URL", max_length=1000, blank=True, null=True
+    )
     circular_details = models.CharField(
         max_length=100, blank=True, null=True
     )  # circular or regulation or email details
@@ -160,11 +170,19 @@ class Task(models.Model):
     )  # adhoc/daily/weekly/monthly/quarterly/etc
 
     return_number = models.CharField(max_length=100, blank=True, null=True)
-    circular_document = models.FileField(blank=True, null=True)
-    inbound_email_communication = models.FileField(blank=True, null=True)
-    outbound_email_communication = models.FileField(blank=True, null=True)
-    data_document_template = models.FileField(blank=True, null=True)
-    data_document = models.FileField(blank=True, null=True)
+    circular_document = models.FileField(
+        blank=True, null=True, upload_to="circulars_document/"
+    )
+    inbound_email_communication = models.FileField(
+        blank=True, null=True, upload_to="inbound_email/"
+    )
+    outbound_email_communication = models.FileField(
+        blank=True, null=True, upload_to="outbound_email/"
+    )
+    data_document_template = models.FileField(
+        blank=True, null=True, upload_to="data_document_template/"
+    )
+    data_document = models.FileField(blank=True, null=True, upload_to="data_document/")
     priority = models.IntegerField(
         blank=True,
         null=True,
@@ -212,7 +230,7 @@ class Task(models.Model):
         return self.task_name
 
     def get_absolute_url(self):
-        return reverse("task_detail", args=[str(self.id)])
+        return reverse("task_detail", kwargs={"pk": self.pk})
 
 
 class TaskRemark(models.Model):
