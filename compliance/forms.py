@@ -26,6 +26,7 @@ class TemplateForm(forms.ModelForm):
             "department",
             "uiic_contact",
             "compliance_contact",
+            "circular_url",
             "circular_details",
             "type_of_compliance",
             "recurring_interval",
@@ -72,6 +73,7 @@ class TaskForm(forms.ModelForm):
             "department",
             "uiic_contact",
             "compliance_contact",
+            "circular_url",
             "circular_details",
             "type_of_compliance",
             "return_number",
@@ -89,13 +91,15 @@ class TaskForm(forms.ModelForm):
 class DepartmentTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ["data_document", "inbound_email_communication"]
+        fields = [
+            "data_document",
+        ]
 
 
 class ComplianceTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ["outbound_email_communication"]
+        fields = ["inbound_email_communication", "outbound_email_communication"]
 
 
 class PublicHolidayUploadForm(forms.Form):
