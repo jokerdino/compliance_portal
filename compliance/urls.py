@@ -2,7 +2,7 @@ from django.urls import path
 from django.views.generic import RedirectView
 from . import views
 
-# urlpatterns = [path("", views.index, name="index")]
+
 urlpatterns = [
     path(
         "templates/",
@@ -99,7 +99,6 @@ urlpatterns = [
         views.TaskListView.as_view(),
         name="task_list_filtered_recurrence",
     ),
-    path("seed_month/", views.seed_data_view, name="seed_month"),
     path(
         "holidays_upload/",
         views.upload_public_holidays,
@@ -111,7 +110,7 @@ urlpatterns = [
         name="template_detail",
     ),
     path(
-        "templates/<int:template_id>/create-task/",
+        "templates/<int:pk>/create-task/",
         views.TaskCreateFromTemplateView.as_view(),
         name="task_create_from_template",
     ),
@@ -124,6 +123,11 @@ urlpatterns = [
         "tasks/<int:pk>/revise",
         views.task_mark_revision,
         name="task_revise",
+    ),
+    path(
+        "seed_data_month/",
+        views.seed_data_view,
+        name="seed_data_view",
     ),
 ]
 
