@@ -39,13 +39,6 @@ from .tables import TemplatesTable, TaskTable, TaskApprovalTable, PublicHolidayT
 # Create your views here.
 
 
-def index(request):
-    num_topics = Task.objects.all().count()
-    compliance_topics = Task.objects.order_by("-created_on")[:5]
-    context = {"num_topics": num_topics, "compliance_topics": compliance_topics}
-    return render(request, "index.html", context=context)
-
-
 class PublicHolidayList(SingleTableView):
     model = PublicHoliday
     table_class = PublicHolidayTable
@@ -65,7 +58,7 @@ class TemplateCreateView(LoginRequiredMixin, generic.CreateView):
     success_url = reverse_lazy("template_list")
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"staff", "admin"}:
+        if request.user.user_type not in {"admin"}:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -77,7 +70,7 @@ class TemplateUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("template_list")
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"staff", "admin"}:
+        if request.user.user_type not in {"admin"}:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -87,7 +80,7 @@ class TemplateDetailView(DetailView):
     template_name = "template_detail.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"staff", "admin"}:
+        if request.user.user_type not in {"viewer", "admin"}:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -115,7 +108,7 @@ class TaskCreateFromTemplateView(generic.CreateView):
     template_name = "task_compliance_edit.html"
 
     def dispatch(self, request, *args, **kwargs):
-        self.template_obj = get_object_or_404(Template, pk=kwargs["template_id"])
+        self.template_obj = get_object_or_404(Template, pk=kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
 
     def get_initial(self):
@@ -127,6 +120,7 @@ class TaskCreateFromTemplateView(generic.CreateView):
                 "priority": self.template_obj.priority,
                 "uiic_contact": self.template_obj.uiic_contact,
                 "compliance_contact": self.template_obj.compliance_contact,
+                "circular_url": self.template_obj.circular_url,
                 "circular_details": self.template_obj.circular_details,
                 "type_of_compliance": self.template_obj.type_of_compliance,
                 "return_number": self.template_obj.return_number,
@@ -142,7 +136,7 @@ class TaskCreateFromTemplateView(generic.CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse("task_detail", args=[self.object.pk])
+        return reverse("task_detail", kwargs={"pk": self.object.pk})
 
 
 class TaskUpdateView(LoginRequiredMixin, UpdateView):
@@ -150,7 +144,7 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     # form_class = TaskForm
     template_name = "task_edit.html"
 
-    DEPT_RESTRICTED_USERS = {"dept_user", "dept_chief_manager", "dept_dgm"}
+    DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
     COMPLIANCE_DEPT_USERS = {"admin"}
     ALLOWED_STATUSES = {"pending", "revision"}
 
@@ -166,6 +160,10 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
                 "You are not allowed to edit this task in its current status."
             )
 
+        elif user.user_type not in self.COMPLIANCE_DEPT_USERS:
+            raise PermissionDenied(
+                "You are not allowed to edit this task in its current status."
+            )
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
@@ -205,18 +203,29 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         return reverse_lazy("task_detail", args=[self.object.pk])
 
     def get_context_data(self, **kwargs):
-        data = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        task_ct = ContentType.objects.get_for_model(Task)
+        task = self.object
+        context["status_audit_logs"] = (
+            LogEntry.objects.filter(
+                content_type=task_ct,
+                object_id=str(task.pk),
+                changes__has_key="current_status",
+            )
+            .select_related("actor")
+            .order_by("-timestamp")
+        )
         if self.request.POST:
-            data["remarks_formset"] = TaskRemarkFormSet(
+            context["remarks_formset"] = TaskRemarkFormSet(
                 self.request.POST,
                 instance=self.object,
                 queryset=TaskRemark.objects.none(),
             )
         else:
-            data["remarks_formset"] = TaskRemarkFormSet(
+            context["remarks_formset"] = TaskRemarkFormSet(
                 instance=self.object, queryset=TaskRemark.objects.none()
             )
-        return data
+        return context
 
     def form_valid(self, form):
         context = self.get_context_data()
@@ -229,15 +238,16 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
             # ✅ Status changes ONLY if BOTH files are uploaded by department users
             if self.request.user.user_type in self.DEPT_RESTRICTED_USERS:
                 data_doc = form.cleaned_data.get("data_document")
-                inbound_mail = form.cleaned_data.get("inbound_email_communication")
 
-                if data_doc and inbound_mail:
+                if data_doc:
                     self.object.current_status = "to_be_approved"
 
             if self.request.user.user_type in self.COMPLIANCE_DEPT_USERS:
+                inbound_email = form.cleaned_data.get("inbound_email_communication")
                 outbound_email = form.cleaned_data.get("outbound_email_communication")
-                if outbound_email:
+                if inbound_email and outbound_email:
                     self.object.current_status = "submitted"
+                    self.object.date_of_document_forwarded = localdate()
 
             self.object.save()
 
@@ -265,6 +275,9 @@ class TaskDetailView(DetailView):
         context = super().get_context_data(**kwargs)
 
         task = self.object
+        user = self.request.user
+        DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
+        COMPLIANCE_DEPT_USERS = {"admin"}
 
         qs = (
             Task.objects.filter(template_id=task.template_id)
@@ -288,7 +301,20 @@ class TaskDetailView(DetailView):
             .select_related("actor")
             .order_by("-timestamp")
         )
+        context["can_request_revision"] = (
+            user.is_authenticated
+            and user.user_type in {"admin"}
+            and task.current_status in {"review", "submitted"}
+        )
 
+        context["can_edit"] = (
+            (
+                user.user_type in DEPT_RESTRICTED_USERS
+                and task.current_status in {"pending", "revision"}
+            )
+            or (user.user_type in COMPLIANCE_DEPT_USERS)
+            and task.current_status not in {"submitted"}
+        )
         return context
 
 
@@ -299,7 +325,7 @@ class TemplateListView(LoginRequiredMixin, SingleTableView):
     table_pagination = False
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"staff", "admin"}:
+        if request.user.user_type not in {"viewer", "admin"}:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -310,7 +336,7 @@ class TaskListView(LoginRequiredMixin, SingleTableView):
     template_name = "compliance/task_table.html"
     table_pagination = False
 
-    DEPT_RESTRICTED_USERS = {"dept_user", "dept_chief_manager", "dept_dgm"}
+    DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
     RECURRENCE_CHOICES = [
         "all",
         "adhoc",
@@ -368,7 +394,7 @@ class TaskSubmittedListView(LoginRequiredMixin, SingleTableView):
     template_name = "compliance/task_submitted_list.html"
     table_pagination = False
 
-    DEPT_RESTRICTED_USERS = {"dept_chief_manager", "dept_dgm"}
+    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm"}
     RECURRENCE_CHOICES = [
         "all",
         "adhoc",
@@ -422,7 +448,7 @@ class TaskRevisionListView(LoginRequiredMixin, SingleTableView):
     template_name = "compliance/task_revision_list.html"
     table_pagination = False
 
-    DEPT_RESTRICTED_USERS = {"dept_chief_manager", "dept_dgm"}
+    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm"}
     RECURRENCE_CHOICES = [
         "all",
         "adhoc",
@@ -476,7 +502,7 @@ class TaskApprovalPendingListView(LoginRequiredMixin, SingleTableView):
     template_name = "compliance/task_approval_list.html"
     table_pagination = False
 
-    DEPT_RESTRICTED_USERS = {"dept_chief_manager", "dept_dgm"}
+    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm"}
     RECURRENCE_CHOICES = [
         "all",
         "adhoc",
@@ -558,7 +584,8 @@ class TaskApprovalPendingListView(LoginRequiredMixin, SingleTableView):
         with set_actor(request.user):
             for task in tasks:
                 task.current_status = new_status
-                task.save(update_fields=["current_status"])
+                task.date_of_document_received = localdate()
+                task.save(update_fields=["current_status", "date_of_document_received"])
                 updated_count += 1
 
         messages.success(request, f"{updated_count} task(s) {message}.")
@@ -571,7 +598,7 @@ class TaskReviewListView(LoginRequiredMixin, SingleTableView):
     template_name = "compliance/task_review_list.html"
     table_pagination = False
 
-    DEPT_RESTRICTED_USERS = {"dept_chief_manager", "dept_dgm"}
+    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm"}
     RECURRENCE_CHOICES = [
         "all",
         "adhoc",
@@ -799,6 +826,7 @@ def upload_public_holidays(request):
                     request,
                     f"{len(holidays)} holidays imported successfully",
                 )
+
                 return redirect("upload_public_holidays")
 
             except Exception as e:
@@ -825,6 +853,14 @@ def task_mark_revision(request, pk):
     task = get_object_or_404(Task, pk=pk)
 
     task.current_status = "revision"
-    task.save(update_fields=["current_status"])
+    task.date_of_document_received = None
+    task.date_of_document_forwarded = None
+    task.save(
+        update_fields=[
+            "current_status",
+            "date_of_document_received",
+            "date_of_document_forwarded",
+        ]
+    )
 
     return redirect("task_detail", pk=task.pk)
