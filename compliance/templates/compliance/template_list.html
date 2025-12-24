@@ -56,15 +56,12 @@
 </div>
 {% endblock content %}
 {% block scripts %}
-<script
-    src="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.2.2/b-3.2.2/b-html5-3.2.2/fc-5.0.4/fh-4.0.1/datatables.min.js"
-    integrity="sha384-tsUGEwojRnoqjP6bzZ+Bpl9YTyUyWkJupPzDwLS5KYjRV58B43iIRkxGOIgBgp/E"
-    crossorigin="anonymous"></script>
+
 <script>new DataTable('#template_table', {
         layout: {
-            top1start: 'pageLength',
-            topStart: 'buttons',
-
+            topStart: {
+                buttons: ['copy', 'csv', 'excel', 'pdf']
+            },
         },
         order: [[3, 'desc']]
     });</script>

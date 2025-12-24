@@ -4,14 +4,21 @@
 {% block content %}
 <div class="container-fluid">
     <h2>Task template lists</h2>
- {% render_table table %}
- </div>
+    {% render_table table %}
+</div>
 {% endblock content %}
 
 {% block scripts %}
 {{ block.super }}
-<script>new DataTable('#templateTable', {
+<script>
+    new DataTable('#templateTable', {
+        layout: {
+            topStart: {
+                buttons: ['copy', 'csv', 'excel', 'pdf']
+            },
+        },
         order: [[3, 'desc']]
-    });</script>
+    });
+</script>
 
 {% endblock scripts %}

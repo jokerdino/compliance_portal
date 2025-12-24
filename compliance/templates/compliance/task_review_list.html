@@ -14,8 +14,6 @@
         {% endfor %}
     </ul>
 
-
-
     {% render_table table %}
 
 </div>
@@ -24,6 +22,11 @@
 {% block scripts %}
 {{ block.super }}
 <script>new DataTable('#templateTable', {
+        layout: {
+            topStart: {
+                buttons: ['copy', 'csv', 'excel', 'pdf']
+            },
+        },
         order: [[3, 'desc']]
     });</script>
 
