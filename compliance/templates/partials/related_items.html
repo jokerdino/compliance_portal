@@ -1,0 +1,20 @@
+{% load render_table from django_tables2 %}
+<div class="accordion mb-5" id="relatedTasksAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingRelatedTasks">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseRelatedTasks" aria-expanded="false"
+                aria-controls="collapseRelatedTasks">Correspondence Data</button>
+        </h2>
+        <div id="collapseRelatedTasks" class="accordion-collapse collapse" aria-labelledby="headingRelatedTasks"
+            data-bs-parent="#relatedTasksAccordion">
+            <div class="accordion-body">
+                {% if related_task_table.rows %}
+                {% render_table related_task_table %}
+                {% else %}
+                <p class="mb-0">No related tasks.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

@@ -8,17 +8,7 @@
     <div class="row">
         <div class="col-12 mb-4 d-flex justify-content-between align-items-center">
             <h1>Template: {{ template.task_name }}</h1>
-            <div>
-                <a href="{% url 'template_edit' template.pk %}" class="btn btn-warning me-2">
-                    <i class="bi bi-pencil-square"></i> Edit Template
-                </a>
-                <a href="{% url 'task_create_from_template' template.id %}" class="btn btn-primary">
-                    Create Task from Template
-                </a>
-                <a href="{% url 'template_list' %}" class="btn btn-secondary">
-                    <i class="bi bi-list"></i> Back to List
-                </a>
-            </div>
+
         </div>
     </div>
 
@@ -212,16 +202,18 @@
 
     <!-- Footer Actions -->
     <div class="text-end">
+        {% if request.user.is_authenticated and request.user.user_type in "admin" %}
         <a href="{% url 'template_edit' template.pk %}" class="btn btn-warning me-2">
             <i class="bi bi-pencil-square"></i> Edit Template
         </a>
         <a href="{% url 'task_create_from_template' template.id %}" class="btn btn-primary">
             Create Task from Template
         </a>
+        {% endif %}
         <a href="{% url 'template_list' %}" class="btn btn-secondary">
             <i class="bi bi-list"></i> Back to List
         </a>
     </div>
 
 </div>
-{% endblock %}
+{% endblock content %}
