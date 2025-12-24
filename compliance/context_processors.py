@@ -28,7 +28,7 @@ from .models import Task
 def tasks_count(request):
     """Returns the count of pending tasks globally."""
     today = localdate()
-    DEPT_RESTRICTED_USERS = {"dept_user", "dept_chief_manager", "dept_dgm"}
+    DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
     user = request.user
 
     qs = Task.objects.all()

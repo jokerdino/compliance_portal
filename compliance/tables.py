@@ -5,14 +5,6 @@ import django_tables2 as tables
 from .models import Template, Task, PublicHoliday
 
 
-# def row_class(record):
-#     if record.type_of_due_date == "calendar":
-#         return "table-danger"
-#     elif record.type_of_due_date == "working":
-#         return "table-warning"
-#     return "table-success"
-
-
 class PublicHolidayTable(tables.Table):
     date_of_holiday = tables.DateColumn(format="d/m/Y")
 
@@ -29,7 +21,6 @@ class PublicHolidayTable(tables.Table):
 
 class TemplatesTable(tables.Table):
     view = tables.Column(empty_values=(), orderable=False)
-    edit = tables.Column(empty_values=(), orderable=False)
 
     class Meta:
         model = Template
@@ -56,15 +47,10 @@ class TemplatesTable(tables.Table):
         url = reverse("template_detail", args=[record.pk])
         return format_html('<a class="btn btn-sm btn-info" href="{}">View</a>', url)
 
-    def render_edit(self, record):
-        url = reverse("template_edit", args=[record.pk])
-        return format_html('<a class="btn btn-sm btn-warning" href="{}">Edit</a>', url)
-
 
 class TaskTable(tables.Table):
     due_date = tables.DateColumn(format="d/m/Y", verbose_name="Due Date")
     view = tables.Column(empty_values=(), orderable=False)
-    edit = tables.Column(empty_values=(), orderable=False)
 
     class Meta:
         model = Task
@@ -90,15 +76,11 @@ class TaskTable(tables.Table):
         url = reverse("task_detail", args=[record.pk])
         return format_html('<a class="btn btn-sm btn-info" href="{}">View</a>', url)
 
-    def render_edit(self, record):
-        url = reverse("task_edit", args=[record.pk])
-        return format_html('<a class="btn btn-sm btn-warning" href="{}">Edit</a>', url)
-
 
 class TaskApprovalTable(tables.Table):
     due_date = tables.DateColumn(format="d/m/Y", verbose_name="Due Date")
     view = tables.Column(empty_values=(), orderable=False)
-    edit = tables.Column(empty_values=(), orderable=False)
+
     select = tables.CheckBoxColumn(
         accessor="pk",
         attrs={
@@ -131,7 +113,3 @@ class TaskApprovalTable(tables.Table):
     def render_view(self, record):
         url = reverse("task_detail", args=[record.pk])
         return format_html('<a class="btn btn-sm btn-info" href="{}">View</a>', url)
-
-    def render_edit(self, record):
-        url = reverse("task_edit", args=[record.pk])
-        return format_html('<a class="btn btn-sm btn-warning" href="{}">Edit</a>', url)
