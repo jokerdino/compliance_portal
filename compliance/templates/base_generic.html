@@ -12,15 +12,20 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
     <link
-        href="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.2.2/b-3.2.2/b-html5-3.2.2/fc-5.0.4/fh-4.0.1/datatables.min.css"
-        rel="stylesheet" integrity="sha384-RduULsCYeUs5ejZUnyQrCJIffy/ZaAEPmheTz5PRKjs64TvQO3jPcrKwpts+clFr"
+        href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.6/b-3.2.6/b-html5-3.2.6/fh-4.0.5/datatables.min.css"
+        rel="stylesheet" integrity="sha384-IV9xjN7PjRGLCGzbGLpH26zWkOgLLUuj59GBALZGOdBYoc3HykaHNtY7zn5L7F8o"
         crossorigin="anonymous" />
+    <style>
+        body {
+            zoom: 90%;
+        }
+    </style>
 
 </head>
 
 <body>
     {% block navbar %}
-    <nav class="navbar navbar-dark navbar-expand-lg bg-secondary">
+    <nav class="navbar navbar-light navbar-expand-lg bg-success-subtle">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Compliance</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
@@ -121,9 +126,15 @@
         crossorigin="anonymous"></script>
 
     {% block scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"
+        integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"
+        integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n"
+        crossorigin="anonymous"></script>
     <script
-        src="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.2.2/b-3.2.2/b-html5-3.2.2/fc-5.0.4/fh-4.0.1/datatables.min.js"
-        integrity="sha384-tsUGEwojRnoqjP6bzZ+Bpl9YTyUyWkJupPzDwLS5KYjRV58B43iIRkxGOIgBgp/E"
+        src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.6/b-3.2.6/b-html5-3.2.6/fh-4.0.5/datatables.min.js"
+        integrity="sha384-FV39c3S5wJor09E9FNDNbZ5ahr3hlz6R26ybFw6Xd8xrnG4b9bEfZorPUYHkl9CM"
         crossorigin="anonymous"></script>
     {% endblock scripts %}
 </body>
