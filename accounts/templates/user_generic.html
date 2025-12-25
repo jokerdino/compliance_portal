@@ -13,10 +13,7 @@
     {% load static %}
     {% bootstrap_css %}
     <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon" />
-    <link
-        href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.6/b-3.2.6/b-html5-3.2.6/fh-4.0.5/datatables.min.css"
-        rel="stylesheet" integrity="sha384-IV9xjN7PjRGLCGzbGLpH26zWkOgLLUuj59GBALZGOdBYoc3HykaHNtY7zn5L7F8o"
-        crossorigin="anonymous" />
+    <link rel="stylesheet" href="{% static 'DataTables/datatables.min.css' %}" />
     <style>
         body {
             zoom: 90%;
@@ -94,17 +91,7 @@
 
     {% block scripts %}
     {% bootstrap_javascript %}
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"
-        integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7"
-        crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"
-        integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n"
-        crossorigin="anonymous"></script>
-    <script
-        src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.6/b-3.2.6/b-html5-3.2.6/fh-4.0.5/datatables.min.js"
-        integrity="sha384-FV39c3S5wJor09E9FNDNbZ5ahr3hlz6R26ybFw6Xd8xrnG4b9bEfZorPUYHkl9CM"
-        crossorigin="anonymous"></script>
+    <script src="{% static 'DataTables/datatables.min.js'%}"></script>
     {% endblock scripts %}
 </body>
 
