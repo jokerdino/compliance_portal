@@ -1,0 +1,41 @@
+{% extends "base_generic.html" %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+
+{% include "partials/partial_task_list.html" %}
+{% endblock content %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+    new DataTable('#templateTable', {
+        layout: {
+            topStart: {
+                buttons: ['copy', 'csv', 'excel', 'pdf']
+            },
+        },
+        order: [[3, 'desc']]
+    });
+</script>
+
+{% if status == "to_be_approved" %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const selectAll = document.getElementById("select-all");
+
+        if (!selectAll) return;
+
+        selectAll.addEventListener("change", function () {
+            const checkboxes = document.querySelectorAll(
+                "tbody input[type='checkbox']"
+            );
+
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+        });
+    });
+</script>
+{% endif %}
+{% endblock scripts %}

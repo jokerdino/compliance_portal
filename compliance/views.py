@@ -394,13 +394,18 @@ class TemplateListView(LoginRequiredMixin, SingleTableView):
         )
 
 
-class TaskListView(LoginRequiredMixin, SingleTableView):
+class BaseTaskListView(LoginRequiredMixin, SingleTableView):
     model = Task
     table_class = TaskTable
-    template_name = "compliance/task_table.html"
     table_pagination = False
 
-    DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
+    status = None
+    template_name = "task_list.html"
+    recurrence_url_name = None
+    date_filter = None
+
+    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm"}
+
     RECURRENCE_CHOICES = [
         "all",
         "adhoc",
@@ -414,207 +419,75 @@ class TaskListView(LoginRequiredMixin, SingleTableView):
     ]
 
     def get_context_data(self, **kwargs):
-        """Pass the current filter type to the template for highlighting active links."""
         context = super().get_context_data(**kwargs)
-        context["filter_type"] = self.kwargs.get("filter", "pending")
-        # Determine the current recurrence filter (default: all)
         context["recurrence_type"] = self.kwargs.get("recurrence", "all")
         context["recurrence_choices"] = self.RECURRENCE_CHOICES
-
+        context["recurrence_url_name"] = self.recurrence_url_name
+        context["status"] = self.status
+        context["filter"] = self.kwargs.get("filter")
         return context
 
-    def get_queryset(self):
-        """Filter tasks based on the 'filter' query parameter."""
-        filter_type = self.kwargs.get("filter", "pending")  # Default to 'pending'
-        recurrence_type = self.kwargs.get("recurrence", "all")
+    def base_queryset(self):
+        qs = Task.objects.select_related("department")
+        user = self.request.user
+
+        if user.user_type in self.DEPT_RESTRICTED_USERS:
+            qs = qs.filter(department=user.department)
+
+        return qs
+
+    def apply_status_filter(self, qs):
+        if self.status:
+            qs = qs.filter(current_status=self.status)
+        return qs
+
+    def apply_recurrence_filter(self, qs):
+        recurrence = self.kwargs.get("recurrence", "all")
+        if recurrence != "all":
+            qs = qs.filter(type_of_compliance=recurrence)
+        return qs
+
+    def apply_date_filter(self, qs):
         today = localdate()
-        user = self.request.user
 
-        qs = Task.objects.select_related("department")
-
-        if user.user_type in self.DEPT_RESTRICTED_USERS:
-            qs = qs.filter(department=user.department)
-
-        if filter_type == "due-today":
-            qs = qs.filter(due_date=today, current_status="pending")
-        elif filter_type == "upcoming":
-            qs = qs.filter(due_date__gt=today, current_status="pending")
-        elif filter_type == "overdue":
-            qs = qs.filter(due_date__lt=today, current_status="pending")
-        else:  # Default: pending tasks
-            qs = qs.filter(
-                current_status="pending"
-            )  # --- Step 3: Recurrence Type Filtering ---
-        if recurrence_type != "all":
-            # Note: The model field is 'type_of_compliance'
-            qs = qs.filter(type_of_compliance=recurrence_type)
+        if self.date_filter == "due-today":
+            return qs.filter(due_date=today)
+        elif self.date_filter == "upcoming":
+            return qs.filter(due_date__gt=today)
+        elif self.date_filter == "overdue":
+            return qs.filter(due_date__lt=today)
 
         return qs
-
-
-class TaskSubmittedListView(LoginRequiredMixin, SingleTableView):
-    model = Task
-    table_class = TaskTable
-    template_name = "compliance/task_submitted_list.html"
-    table_pagination = False
-
-    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm"}
-    RECURRENCE_CHOICES = [
-        "all",
-        "adhoc",
-        "daily",
-        "weekly",
-        "fortnightly",
-        "monthly",
-        "quarterly",
-        "halfyearly",
-        "annual",
-    ]
-
-    def get_context_data(self, **kwargs):
-        """Pass the current filter type to the template for highlighting active links."""
-        context = super().get_context_data(**kwargs)
-        # context["filter_type"] = self.kwargs.get("filter", "to_be_approved")
-        # Determine the current recurrence filter (default: all)
-        context["recurrence_type"] = self.kwargs.get("recurrence", "all")
-        context["recurrence_choices"] = self.RECURRENCE_CHOICES
-
-        return context
 
     def get_queryset(self):
-        """Filter tasks based on the 'filter' query parameter."""
-
-        # filter_type = self.kwargs.get(
-        #     "filter", "to_be_approved"
-        # )  # Default to 'pending'
-        recurrence_type = self.kwargs.get("recurrence", "all")
-        # today = localdate()
-        user = self.request.user
-
-        qs = Task.objects.select_related("department")
-
-        if user.user_type in self.DEPT_RESTRICTED_USERS:
-            qs = qs.filter(department=user.department)
-
-        qs = qs.filter(
-            current_status="submitted"
-        )  # --- Step 3: Recurrence Type Filtering ---
-        if recurrence_type != "all":
-            # Note: The model field is 'type_of_compliance'
-            qs = qs.filter(type_of_compliance=recurrence_type)
-
+        qs = self.base_queryset()
+        qs = self.apply_status_filter(qs)
+        qs = self.apply_recurrence_filter(qs)
+        qs = self.apply_date_filter(qs)
         return qs
 
 
-class TaskRevisionListView(LoginRequiredMixin, SingleTableView):
-    model = Task
-    table_class = TaskTable
-    template_name = "compliance/task_revision_list.html"
-    table_pagination = False
-
-    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm"}
-    RECURRENCE_CHOICES = [
-        "all",
-        "adhoc",
-        "daily",
-        "weekly",
-        "fortnightly",
-        "monthly",
-        "quarterly",
-        "halfyearly",
-        "annual",
-    ]
-
-    def get_context_data(self, **kwargs):
-        """Pass the current filter type to the template for highlighting active links."""
-        context = super().get_context_data(**kwargs)
-        # context["filter_type"] = self.kwargs.get("filter", "to_be_approved")
-        # Determine the current recurrence filter (default: all)
-        context["recurrence_type"] = self.kwargs.get("recurrence", "all")
-        context["recurrence_choices"] = self.RECURRENCE_CHOICES
-
-        return context
-
-    def get_queryset(self):
-        """Filter tasks based on the 'filter' query parameter."""
-
-        # filter_type = self.kwargs.get(
-        #     "filter", "to_be_approved"
-        # )  # Default to 'pending'
-        recurrence_type = self.kwargs.get("recurrence", "all")
-        # today = localdate()
-        user = self.request.user
-
-        qs = Task.objects.select_related("department")
-
-        if user.user_type in self.DEPT_RESTRICTED_USERS:
-            qs = qs.filter(department=user.department)
-
-        qs = qs.filter(
-            current_status="revision"
-        )  # --- Step 3: Recurrence Type Filtering ---
-        if recurrence_type != "all":
-            # Note: The model field is 'type_of_compliance'
-            qs = qs.filter(type_of_compliance=recurrence_type)
-
-        return qs
+class TaskSubmittedListView(BaseTaskListView):
+    status = "submitted"
+    recurrence_url_name = "task_list_filtered_recurrence_submitted"
 
 
-class TaskApprovalPendingListView(LoginRequiredMixin, SingleTableView):
-    model = Task
+class TaskRevisionListView(BaseTaskListView):
+    status = "revision"
+    recurrence_url_name = "task_list_filtered_recurrence_revision"
+
+
+class TaskReviewListView(BaseTaskListView):
+    status = "review"
+    recurrence_url_name = "task_list_filtered_recurrence_review"
+
+
+class TaskApprovalPendingListView(BaseTaskListView):
     table_class = TaskApprovalTable
-    template_name = "compliance/task_approval_list.html"
-    table_pagination = False
-
-    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm"}
-    RECURRENCE_CHOICES = [
-        "all",
-        "adhoc",
-        "daily",
-        "weekly",
-        "fortnightly",
-        "monthly",
-        "quarterly",
-        "halfyearly",
-        "annual",
-    ]
-
-    def get_context_data(self, **kwargs):
-        """Pass the current filter type to the template for highlighting active links."""
-        context = super().get_context_data(**kwargs)
-        # context["filter_type"] = self.kwargs.get("filter", "to_be_approved")
-        # Determine the current recurrence filter (default: all)
-        context["recurrence_type"] = self.kwargs.get("recurrence", "all")
-        context["recurrence_choices"] = self.RECURRENCE_CHOICES
-
-        return context
-
-    def get_queryset(self):
-        """Filter tasks based on the 'filter' query parameter."""
-
-        # filter_type = self.kwargs.get(
-        #     "filter", "to_be_approved"
-        # )  # Default to 'pending'
-        recurrence_type = self.kwargs.get("recurrence", "all")
-        # today = localdate()
-        user = self.request.user
-
-        qs = Task.objects.select_related("department")
-
-        if user.user_type in self.DEPT_RESTRICTED_USERS:
-            qs = qs.filter(department=user.department)
-
-        qs = qs.filter(
-            current_status="to_be_approved"
-        )  # --- Step 3: Recurrence Type Filtering ---
-        if recurrence_type != "all":
-            # Note: The model field is 'type_of_compliance'
-            qs = qs.filter(type_of_compliance=recurrence_type)
-
-        return qs
+    status = "to_be_approved"
+    recurrence_url_name = "task_list_filtered_recurrence_approval_pending"
 
     def post(self, request, *args, **kwargs):
-        # Authorization guard
         if request.user.user_type not in self.DEPT_RESTRICTED_USERS:
             return self.handle_no_permission()
 
@@ -625,126 +498,40 @@ class TaskApprovalPendingListView(LoginRequiredMixin, SingleTableView):
             messages.warning(request, "Please select at least one task.")
             return redirect(request.path)
 
-        if action == "approve":
-            new_status = "review"
-            message = "approved and moved to Review"
+        transitions = {
+            "approve": ("review", "approved and moved to Review"),
+            "send_back": ("pending", "sent back to Pending"),
+        }
 
-        elif action == "send_back":
-            new_status = "pending"
-            message = "sent back to Pending"
-
-        else:
+        if action not in transitions:
             messages.error(request, "Invalid action.")
             return redirect(request.path)
 
+        new_status, message = transitions[action]
+
         tasks = Task.objects.filter(
             id__in=task_ids,
-            current_status="to_be_approved",
+            current_status=self.status,
         )
-
-        updated_count = 0
-
-        # 🔑 Ensure actor + change tracking is recorded
+        updated = 0
         with set_actor(request.user):
             for task in tasks:
                 task.current_status = new_status
                 task.date_of_document_received = localdate()
                 task.save(update_fields=["current_status", "date_of_document_received"])
-                updated_count += 1
-
-        messages.success(request, f"{updated_count} task(s) {message}.")
+                updated += 1
+        messages.success(request, f"{updated} task(s) {message}.")
         return redirect(request.path)
 
 
-class TaskReviewListView(LoginRequiredMixin, SingleTableView):
-    model = Task
-    table_class = TaskTable
-    template_name = "compliance/task_review_list.html"
-    table_pagination = False
+class TaskListView(BaseTaskListView):
+    status = "pending"
+    recurrence_url_name = "task_list_filtered_recurrence"
 
-    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm"}
-    RECURRENCE_CHOICES = [
-        "all",
-        "adhoc",
-        "daily",
-        "weekly",
-        "fortnightly",
-        "monthly",
-        "quarterly",
-        "halfyearly",
-        "annual",
-    ]
-
-    def get_context_data(self, **kwargs):
-        """Pass the current filter type to the template for highlighting active links."""
-        context = super().get_context_data(**kwargs)
-        # context["filter_type"] = self.kwargs.get("filter", "to_be_approved")
-        # Determine the current recurrence filter (default: all)
-        context["recurrence_type"] = self.kwargs.get("recurrence", "all")
-        context["recurrence_choices"] = self.RECURRENCE_CHOICES
-
-        return context
-
-    def get_queryset(self):
-        """Filter tasks based on the 'filter' query parameter."""
-
-        # filter_type = self.kwargs.get(
-        #     "filter", "to_be_approved"
-        # )  # Default to 'pending'
-        recurrence_type = self.kwargs.get("recurrence", "all")
-        # today = localdate()
-        user = self.request.user
-
-        qs = Task.objects.select_related("department")
-
-        if user.user_type in self.DEPT_RESTRICTED_USERS:
-            qs = qs.filter(department=user.department)
-
-        qs = qs.filter(
-            current_status="review"
-        )  # --- Step 3: Recurrence Type Filtering ---
-        if recurrence_type != "all":
-            # Note: The model field is 'type_of_compliance'
-            qs = qs.filter(type_of_compliance=recurrence_type)
-
-        return qs
-
-    def post(self, request, *args, **kwargs):
-        task_ids = request.POST.getlist("select")
-        action = request.POST.get("action")
-
-        if not task_ids:
-            messages.warning(request, "Please select at least one task.")
-            return redirect(request.path)
-
-        if action == "approve":
-            new_status = "submitted"
-            message = "approved and moved to Review"
-
-        elif action == "send_back":
-            new_status = "revision"
-            message = "sent back to Pending"
-
-        else:
-            messages.error(request, "Invalid action.")
-            return redirect(request.path)
-
-        tasks = Task.objects.filter(
-            id__in=task_ids,
-            current_status="review",
-        )
-
-        updated_count = 0
-
-        # 🔑 This ensures actor + timestamp are recorded in auditlog
-        with set_actor(request.user):
-            for task in tasks:
-                task.current_status = new_status
-                task.save(update_fields=["current_status"])
-                updated_count += 1
-
-        messages.success(request, f"{updated_count} task(s) {message}.")
-        return redirect(request.path)
+    def dispatch(self, request, *args, **kwargs):
+        filter_type = kwargs.get("filter", "pending")
+        self.date_filter = filter_type if filter_type != "pending" else None
+        return super().dispatch(request, *args, **kwargs)
 
 
 def is_working_day(date):

@@ -1,0 +1,38 @@
+{% load render_table from django_tables2 %}
+
+<div class="container-fluid mt-4">
+    <ul class="nav nav-tabs mb-4">
+        {% for recurrence in recurrence_choices %}
+        <li class="nav-item">
+            <a class="nav-link {% if recurrence_type == recurrence %}active{% endif %}" href="{% if filter %}
+         {% url recurrence_url_name filter=filter recurrence=recurrence %}
+         {% else %}
+         {% url recurrence_url_name recurrence=recurrence %}
+         {% endif %}">
+                {{ recurrence|capfirst }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% if status == "to_be_approved" %}
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3 d-flex gap-2">
+            <button type="submit" name="action" value="approve" class="btn btn-success">
+                Approve
+            </button>
+
+            <button type="submit" name="action" value="send_back" class="btn btn-warning">
+                Send Back to Pending
+            </button>
+        </div>
+
+        {% render_table table %}
+    </form>
+
+    {% else %}
+    {% render_table table %}
+    {% endif %}
+</div>
