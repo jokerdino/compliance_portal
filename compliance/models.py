@@ -192,11 +192,13 @@ class Task(models.Model):
         blank=True,
         null=True,
         default=None,
+        verbose_name="Date of document received",
     )
     date_of_document_forwarded = models.DateField(
         blank=True,
         null=True,
         default=None,
+        verbose_name="Date of submission to IRDA",
     )
 
     created_by = models.ForeignKey(

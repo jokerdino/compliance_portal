@@ -204,9 +204,9 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         user = self.request.user
 
         if user.user_type in self.DEPT_RESTRICTED_USERS:
-            return ["task_edit.html"]
+            return ["task_upload_dept.html"]
 
-        return ["task_compliance_upload.html"]
+        return ["task_upload_compliance.html"]
 
     def get_success_url(self):
         return reverse_lazy("task_detail", args=[self.object.pk])

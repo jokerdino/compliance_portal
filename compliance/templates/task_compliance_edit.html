@@ -4,7 +4,7 @@
 {% block content %}
 
 <div class="container">
-    <h1 class="title">Add a new task</h1>
+    <h1 class="title mt-3">Add a new task</h1>
 
     {# ===== GLOBAL ERROR SUMMARY ===== #}
     {% if form.errors %}
@@ -23,7 +23,21 @@
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {% bootstrap_form form layout="horizontal" %}
+        {% for legend, field_names in form.fieldsets.items %}
+        <fieldset class="border rounded p-3 mb-4">
+            <legend class="float-none w-auto px-2">{{ legend }}</legend>
+
+            <div class="row">
+                {% for field in form.visible_fields %}
+                {% if field.name in field_names %}
+                <div class="col-12 col-md-6">
+                    {% bootstrap_field field %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </fieldset>
+        {% endfor %}
 
         {% if remarks_formset %}
         <h5 class="mt-4 text-secondary">Add New Remarks</h5>

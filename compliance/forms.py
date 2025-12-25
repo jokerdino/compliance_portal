@@ -9,7 +9,15 @@ TaskRemarkFormSet = inlineformset_factory(
     fields=["text"],
     extra=1,
     can_delete=False,
-    widgets={"text": forms.Textarea(attrs={"class": "form-control", "rows": 4})},
+    widgets={
+        "text": forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": "Add your remark here…",
+            }
+        )
+    },
 )
 
 
@@ -49,22 +57,22 @@ class TemplateForm(forms.ModelForm):
     class Meta:
         model = Template
         fields = [
+            "type_of_compliance",
             "task_name",
-            "due_date_days",
-            "type_of_due_date",
-            "recurring_task_status",
             "department",
+            "priority",
+            "type_of_due_date",
+            "due_date_days",
+            "recurring_task_status",
+            "recurring_interval",
+            "repeat_month",
             "uiic_contact",
             "compliance_contact",
             "circular_url",
             "circular_details",
-            "type_of_compliance",
-            "recurring_interval",
-            "repeat_month",
             "return_number",
-            "circular_document",
-            "priority",
             "data_document_template",
+            "circular_document",
         ]
         widgets = {
             "repeat_month": forms.CheckboxSelectMultiple(),
@@ -80,6 +88,33 @@ class TemplateForm(forms.ModelForm):
 
 
 class TaskForm(forms.ModelForm):
+    fieldsets = {
+        "Task details": [
+            "type_of_compliance",
+            "task_name",
+            "department",
+            "current_status",
+            "priority",
+            "due_date",
+            "data_document_template",
+        ],
+        "Contacts": ["uiic_contact", "compliance_contact"],
+        "Circular / Reference Details": [
+            "circular_url",
+            "circular_details",
+            "return_number",
+            "circular_document",
+        ],
+        "Dates": [
+            "date_of_document_received",
+            "date_of_document_forwarded",
+        ],
+        "Upload Documents": [
+            "data_document",
+            "inbound_email_communication",
+            "outbound_email_communication",
+        ],
+    }
     due_date = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
         required=True,
@@ -97,24 +132,24 @@ class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
         fields = [
+            "type_of_compliance",
             "task_name",
-            "due_date",
-            "current_status",
             "department",
+            "current_status",
+            "priority",
+            "due_date",
+            "data_document_template",
             "uiic_contact",
             "compliance_contact",
             "circular_url",
             "circular_details",
-            "type_of_compliance",
             "return_number",
             "circular_document",
-            "inbound_email_communication",
-            "outbound_email_communication",
-            "data_document_template",
-            "data_document",
-            "priority",
             "date_of_document_received",
             "date_of_document_forwarded",
+            "data_document",
+            "inbound_email_communication",
+            "outbound_email_communication",
         ]
 
 
