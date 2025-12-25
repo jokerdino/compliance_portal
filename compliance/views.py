@@ -4,18 +4,14 @@ import pandas as pd
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
-from django.contrib import messages
-from django.views import generic
-from django.views.generic import DetailView
+from django.views.generic import DetailView, CreateView
 from django.views.generic.edit import UpdateView
 from django.forms.models import model_to_dict
-from django.utils.timezone import now
+from django.utils.timezone import now, localdate
 from django.urls import reverse_lazy, reverse
-from django.http import HttpResponse, HttpResponseForbidden  # , HttpResponseNotFound
-from django.utils.timezone import localdate
+from django.http import HttpResponse, HttpResponseForbidden
 from django.db.models import Prefetch
-
-
+from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -32,12 +28,9 @@ from .forms import (
     TaskRemarkFormSet,
     DepartmentTaskForm,
     PublicHolidayUploadForm,
-    # TaskFromTemplateForm,
     ComplianceTaskForm,
 )
 from .tables import TemplatesTable, TaskTable, TaskApprovalTable, PublicHolidayTable
-
-# Create your views here.
 
 
 class PublicHolidayList(SingleTableView):
@@ -52,7 +45,7 @@ class PublicHolidayList(SingleTableView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class TemplateCreateView(LoginRequiredMixin, generic.CreateView):
+class TemplateCreateView(LoginRequiredMixin, CreateView):
     model = Template
     form_class = TemplateForm
     template_name = "template_add.html"
@@ -98,7 +91,7 @@ class TemplateDetailView(DetailView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class TaskCreateView(LoginRequiredMixin, generic.CreateView):
+class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
     form_class = TaskForm
     template_name = "task_compliance_edit.html"
@@ -115,7 +108,7 @@ class TaskCreateView(LoginRequiredMixin, generic.CreateView):
         return super().form_valid(form)
 
 
-class TaskCreateFromTemplateView(generic.CreateView):
+class TaskCreateFromTemplateView(CreateView):
     model = Task
     form_class = TaskForm
     template_name = "task_compliance_edit.html"
@@ -154,12 +147,9 @@ class TaskCreateFromTemplateView(generic.CreateView):
 
 class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
-    # form_class = TaskForm
-    template_name = "task_edit.html"
 
     DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
     COMPLIANCE_DEPT_USERS = {"admin"}
-    ALLOWED_STATUSES = {"pending", "revision"}
 
     def get_queryset(self):
         return (
@@ -195,32 +185,18 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         if user.user_type in self.DEPT_RESTRICTED_USERS:
             return DepartmentTaskForm
 
-        if user.user_type not in self.DEPT_RESTRICTED_USERS:
-            return ComplianceTaskForm  # TaskForm
+        return ComplianceTaskForm
 
-        # Fallback (safety)
-        return DepartmentTaskForm
-
-    # 2. Dynamically Get Template Name (New method)
     def get_template_names(self):
         """
         Returns a different template name based on the user's role.
         """
         user = self.request.user
 
-        # Check if user is authenticated (should be, due to LoginRequiredMixin, but safe check)
-        # if not user.is_authenticated:
-        # If user is not authenticated, let the LoginRequiredMixin handle the redirect,
-        # but provide a default template name just in case.
-        #   return ["compliance/task_edit_default.html"]
-
         if user.user_type in self.DEPT_RESTRICTED_USERS:
-            # Department users see the limited document upload/remark form
             return ["task_edit.html"]
-        elif user.user_type not in self.DEPT_RESTRICTED_USERS:
-            return ["task_compliance_upload.html"]
-        # All other users (Admin, Compliance, etc.) see the full form
-        # return ["compliance/task_edit_full.html"]
+
+        return ["task_compliance_upload.html"]
 
     def get_success_url(self):
         return reverse_lazy("task_detail", args=[self.object.pk])
@@ -255,10 +231,9 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         remarks_formset = context["remarks_formset"]
         form.instance.updated_by = self.request.user
 
-        if form.is_valid() and remarks_formset.is_valid():
+        if remarks_formset.is_valid():
             self.object = form.save(commit=False)
 
-            # ✅ Status changes ONLY if BOTH files are uploaded by department users
             if self.request.user.user_type in self.DEPT_RESTRICTED_USERS:
                 data_doc = form.cleaned_data.get("data_document")
 
@@ -274,15 +249,13 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
 
             self.object.save()
 
-            # if remarks_formset.is_valid():
             remarks = remarks_formset.save(commit=False)
             for remark in remarks:
                 remark.task = self.object
                 if not remark.created_by:
                     remark.created_by = self.request.user
                 remark.save()
-            # remarks_formset.instance = self.object
-            # remarks_formset.save()
+
             return redirect(self.get_success_url())
         else:
             return self.form_invalid(form)
