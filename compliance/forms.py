@@ -15,6 +15,36 @@ TaskRemarkFormSet = inlineformset_factory(
 
 class TemplateForm(forms.ModelForm):
     success_url = reverse_lazy("template_list")
+    fieldsets = {
+        "Task details": [
+            "type_of_compliance",
+            "task_name",
+            "department",
+            "priority",
+        ],
+        "Due date": [
+            "type_of_due_date",
+            "due_date_days",
+        ],
+        "Recurrence Settings": [
+            "recurring_task_status",
+            "recurring_interval",
+            "repeat_month",
+        ],
+        "Contacts": [
+            "uiic_contact",
+            "compliance_contact",
+        ],
+        "Circular / Reference Details": [
+            "circular_url",
+            "circular_details",
+            "return_number",
+        ],
+        "Upload Documents": [
+            "data_document_template",
+            "circular_document",
+        ],
+    }
 
     class Meta:
         model = Template
@@ -103,6 +133,7 @@ class ComplianceTaskForm(forms.ModelForm):
 
 
 class PublicHolidayUploadForm(forms.Form):
+    success_url = reverse_lazy("public_holiday_list")
     file = forms.FileField(
         label="Upload Excel File",
         help_text="Accepted formats: .xlsx",

@@ -56,6 +56,11 @@ class TemplateCreateView(LoginRequiredMixin, CreateView):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Add new template"
+        return context
+
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         form.instance.updated_by = self.request.user
@@ -72,6 +77,11 @@ class TemplateUpdateView(LoginRequiredMixin, UpdateView):
         if request.user.user_type not in {"admin"}:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Update template"
+        return context
 
     def form_valid(self, form):
         form.instance.updated_by = self.request.user
