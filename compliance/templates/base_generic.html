@@ -85,13 +85,13 @@
                         <span class="badge bg-danger">{{ overdue_count }}</span></a>
                     <a class="nav-link {% if filter_val == 'due-today' %}active{% endif %}"
                         href="{% url 'task_list' filter='due-today' %}">Due today
-                        <span class="badge bg-info">{{ due_today_count }}</span></a>
+                        <span class="badge bg-info text-black">{{ due_today_count }}</span></a>
                     <a class="nav-link {% if filter_val == 'upcoming' %}active{% endif %}"
                         href="{% url 'task_list' filter='upcoming' %}">Upcoming tasks
-                        <span class="badge bg-success">{{ upcoming_count }}</span></a>
+                        <span class="badge bg-secondary">{{ upcoming_count }}</span></a>
                     <a class="nav-link {% if url_name == 'task_list_revision' or url_name == 'task_list_filtered_recurrence_revision' %}active{% endif %}"
                         href="{% url 'task_list_revision' %}">To be revised
-                        <span class="badge bg-success">{{ revision_count }}</span></a>
+                        <span class="badge bg-primary">{{ revision_count }}</span></a>
                     {% if request.user.is_authenticated and request.user.user_type in "dept_agm admin" %}
                     <a class="nav-link {% if url_name == 'task_list_approval_pending' or url_name == 'task_list_filtered_recurrence_approval_pending' %}active{% endif %}"
                         href="{% url 'task_list_approval_pending' %}">Pending for
@@ -102,7 +102,7 @@
                     <a class="nav-link {% if url_name == 'task_list_review' or url_name == 'task_list_filtered_recurrence_review' %}active{% endif %}"
                         href="{% url 'task_list_review' %}">Pending for
                         review
-                        <span class="badge bg-success">{{ review_count }}</span></a>
+                        <span class="badge bg-warning text-black">{{ review_count }}</span></a>
                     {% endif %}
                     {% endwith %}
                 </div>
