@@ -115,19 +115,6 @@ class TaskForm(forms.ModelForm):
             "outbound_email_communication",
         ],
     }
-    due_date = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"}),
-        required=True,
-    )
-    date_of_document_received = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"}),
-        required=False,
-    )
-
-    date_of_document_forwarded = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"}),
-        required=False,
-    )
 
     class Meta:
         model = Task
@@ -151,6 +138,11 @@ class TaskForm(forms.ModelForm):
             "inbound_email_communication",
             "outbound_email_communication",
         ]
+        widgets = {
+            "due_date": forms.DateInput(attrs={"type": "date"}),
+            "date_of_document_forwarded": forms.DateInput(attrs={"type": "date"}),
+            "date_of_document_received": forms.DateInput(attrs={"type": "date"}),
+        }
 
 
 class DepartmentTaskForm(forms.ModelForm):
