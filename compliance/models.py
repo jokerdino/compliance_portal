@@ -264,6 +264,9 @@ class Task(models.Model):
 
         return False
 
+    class Meta:
+        ordering = ["due_date", "priority"]
+
 
 class TaskRemark(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="remarks")

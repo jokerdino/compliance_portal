@@ -299,7 +299,7 @@ class TaskDetailView(DetailView):
             )
             .filter(template_id=task.template_id)
             .exclude(id=task.id)
-            .order_by("-id")
+            .order_by("due_date")
         )
 
         table = TaskTable(qs)

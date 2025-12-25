@@ -9,13 +9,15 @@
 {% block scripts %}
 {{ block.super }}
 <script>
-    new DataTable('#templateTable', {
+    const TASK_STATUS = "{{ status }}";
+    const orderColumn = TASK_STATUS === "to_be_approved" ? 6 : 5;
+    new DataTable('#taskTable', {
         layout: {
             topStart: {
                 buttons: ['copy', 'csv', 'excel', 'pdf']
             },
         },
-        order: [[3, 'desc']]
+        order: [[orderColumn, 'asc']]
     });
 </script>
 

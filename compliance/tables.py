@@ -38,9 +38,8 @@ class TemplatesTable(tables.Table):
             "task_name",
             "due_date_days",
             "type_of_due_date",
-            "return_number",
-            "compliance_contact",
-            "circular_details",
+            "priority",
+            "recurring_task_status",
         )
 
     def render_view(self, record):
@@ -49,36 +48,98 @@ class TemplatesTable(tables.Table):
 
 
 class TaskTable(tables.Table):
-    due_date = tables.DateColumn(format="d/m/Y", verbose_name="Due Date")
+    due_date = tables.DateColumn(
+        format="d/m/Y",
+        verbose_name="Due Date",
+        attrs={
+            "td": {
+                "data-sort": lambda record: (record.due_date if record.due_date else "")
+            }
+        },
+    )
+    data_document = tables.Column(
+        verbose_name="Document",
+        empty_values=(),
+    )
+
+    date_of_document_forwarded = tables.DateColumn(
+        format="d/m/Y",
+        verbose_name="Date of submission",
+        attrs={
+            "td": {
+                "data-sort": lambda record: (
+                    record.date_of_document_forwarded
+                    if record.date_of_document_forwarded
+                    else ""
+                )
+            }
+        },
+    )
+
     view = tables.Column(empty_values=(), orderable=False)
 
     class Meta:
         model = Task
+        order_by = ("due_date",)
         orderable = False
         template_name = "django_tables2/bootstrap5.html"
 
         attrs = {
             "class": "table table-bordered table-striped table-hover",
-            "id": "templateTable",
+            "id": "taskTable",
         }
         # row_attrs = {"class": row_class}
         fields = (
             "type_of_compliance",
             "department",
             "task_name",
+            "current_status",
+            "priority",
             "due_date",
-            "return_number",
-            "compliance_contact",
-            "circular_details",
+            "data_document",
+            "date_of_document_forwarded",
         )
 
     def render_view(self, record):
         url = reverse("task_detail", args=[record.pk])
         return format_html('<a class="btn btn-sm btn-info" href="{}">View</a>', url)
 
+    def render_data_document(self, value):
+        if not value:
+            return "-"
+        return format_html(
+            '<a href="{}" class="btn btn-sm btn-outline-primary">Download</a>',
+            value.url,
+        )
+
 
 class TaskApprovalTable(tables.Table):
-    due_date = tables.DateColumn(format="d/m/Y", verbose_name="Due Date")
+    due_date = tables.DateColumn(
+        format="d/m/Y",
+        verbose_name="Due Date",
+        attrs={
+            "td": {
+                "data-sort": lambda record: (record.due_date if record.due_date else "")
+            }
+        },
+    )
+    data_document = tables.Column(
+        verbose_name="Document",
+        empty_values=(),
+    )
+    date_of_document_forwarded = tables.DateColumn(
+        format="d/m/Y",
+        verbose_name="Date of submission",
+        attrs={
+            "td": {
+                "data-sort": lambda record: (
+                    record.date_of_document_forwarded
+                    if record.date_of_document_forwarded
+                    else ""
+                )
+            }
+        },
+    )
     view = tables.Column(empty_values=(), orderable=False)
 
     select = tables.CheckBoxColumn(
@@ -91,12 +152,13 @@ class TaskApprovalTable(tables.Table):
 
     class Meta:
         model = Task
+        order_by = ("due_date",)
         orderable = False
         template_name = "django_tables2/bootstrap5.html"
 
         attrs = {
             "class": "table table-bordered table-striped table-hover",
-            "id": "templateTable",
+            "id": "taskTable",
         }
         # row_attrs = {"class": row_class}
         fields = (
@@ -104,12 +166,21 @@ class TaskApprovalTable(tables.Table):
             "type_of_compliance",
             "department",
             "task_name",
+            "current_status",
+            "priority",
             "due_date",
-            "return_number",
-            "compliance_contact",
-            "circular_details",
+            "data_document",
+            "date_of_document_forwarded",
         )
 
     def render_view(self, record):
         url = reverse("task_detail", args=[record.pk])
         return format_html('<a class="btn btn-sm btn-info" href="{}">View</a>', url)
+
+    def render_data_document(self, value):
+        if not value:
+            return "-"
+        return format_html(
+            '<a href="{}" class="btn btn-sm btn-outline-primary">Download</a>',
+            value.url,
+        )
