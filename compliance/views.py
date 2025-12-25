@@ -183,20 +183,10 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
-        user = request.user
 
-        if (
-            user.user_type in self.DEPT_RESTRICTED_USERS
-            and self.object.current_status not in self.ALLOWED_STATUSES
-        ):
-            raise PermissionDenied(
-                "You are not allowed to edit this task in its current status."
-            )
+        if not self.object.can_edit(request.user):
+            raise PermissionDenied("You are not allowed to edit this task.")
 
-        elif user.user_type not in self.COMPLIANCE_DEPT_USERS:
-            raise PermissionDenied(
-                "You are not allowed to edit this task in its current status."
-            )
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
@@ -329,8 +319,6 @@ class TaskDetailView(DetailView):
 
         task = self.object
         user = self.request.user
-        DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
-        COMPLIANCE_DEPT_USERS = {"admin"}
 
         qs = (
             Task.objects.select_related(
@@ -357,19 +345,9 @@ class TaskDetailView(DetailView):
             .select_related("actor")
             .order_by("-timestamp")
         )
-        context["can_request_revision"] = (
-            user.is_authenticated
-            and user.user_type in {"admin"}
-            and task.current_status in {"review", "submitted"}
-        )
+        context["can_request_revision"] = task.can_request_revision(user)
+        context["can_edit"] = task.can_edit(user)
 
-        context["can_edit"] = (
-            user.user_type in DEPT_RESTRICTED_USERS
-            and task.current_status in {"pending", "revision"}
-        ) or (
-            user.user_type in COMPLIANCE_DEPT_USERS
-            and task.current_status not in {"submitted"}
-        )
         return context
 
 

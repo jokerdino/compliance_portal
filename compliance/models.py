@@ -118,7 +118,6 @@ class Template(models.Model):
         return reverse("template_detail", kwargs={"pk": self.pk})
 
 
-# Create your models here.
 class Task(models.Model):
     task_name = models.CharField(max_length=100)
     due_date = models.DateField(
@@ -231,6 +230,39 @@ class Task(models.Model):
 
     def get_absolute_url(self):
         return reverse("task_detail", kwargs={"pk": self.pk})
+
+    REVIEWABLE_STATUSES = {"review", "submitted"}
+    EDITABLE_STATUSES = {"pending", "revision"}
+
+    def can_request_revision(self, user) -> bool:
+        """
+        Can the given user request a revision for this task?
+        """
+        if not user or not user.is_authenticated:
+            return False
+
+        return (
+            user.user_type == "admin"
+            and self.current_status in self.REVIEWABLE_STATUSES
+        )
+
+    def can_edit(self, user) -> bool:
+        """
+        Can the given user edit this task?
+        """
+        if not user or not user.is_authenticated:
+            return False
+
+        if (
+            user.user_type in {"dept_user", "dept_agm", "dept_dgm"}
+            and self.current_status in self.EDITABLE_STATUSES
+        ):
+            return True
+
+        if user.user_type == "admin" and self.current_status != "submitted":
+            return True
+
+        return False
 
 
 class TaskRemark(models.Model):
