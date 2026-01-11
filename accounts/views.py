@@ -154,6 +154,9 @@ class UserListView(
     def test_func(self):
         return self.request.user.is_staff
 
+    def get_queryset(self):
+        return get_user_model().objects.filter(is_superuser=False)
+
 
 class UploadExcelView(UserPassesTestMixin, FormView):
     template_name = "accounts/form.html"
