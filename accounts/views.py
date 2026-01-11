@@ -44,6 +44,7 @@ class DepartmentUpdateView(UpdateView):
 class DepartmentListView(SingleTableView):
     model = Department
     table_class = DepartmentTable
+    table_pagination = False
 
 
 class CustomLoginView(LoginView):
@@ -147,7 +148,8 @@ class UserListView(
     model = get_user_model()
     table_class = UserTable
     template_name = "accounts/list.html"
-    paginate = False
+    # paginate = False
+    table_pagination = False
 
     def test_func(self):
         return self.request.user.is_staff

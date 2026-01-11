@@ -11,7 +11,7 @@ USERTYPE = [
     ("admin", "Admin"),
     ("viewer", "Viewer"),
     ("dept_user", "Department User"),
-    ("dept_agm", "Department AGM"),
+    ("dept_agm", "Department Chief Manager"),
     ("dept_dgm", "Department DGM"),
 ]
 
