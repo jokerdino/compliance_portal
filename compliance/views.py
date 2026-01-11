@@ -562,7 +562,7 @@ def populate_templates(request, recurring_interval):
         today = localdate()
         month_string = today.strftime("%B")  # Full month name
         annual_templates = Template.objects.filter(
-            recurring_interval__in=["halfyearly", "annual"],
+            recurring_interval__in=["annual"],
             repeat_month__month_name=month_string,
             recurring_task_status="Active",
         ).distinct()
