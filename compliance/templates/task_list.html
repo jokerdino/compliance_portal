@@ -13,6 +13,7 @@
     const orderColumn = TASK_STATUS === "to_be_approved" ? 6 : 5;
     new DataTable('#taskTable', {
         layout: {
+            top1start: 'pageLength',
             topStart: {
                 buttons: ['copy', 'csv', 'excel', 'pdf']
             },
