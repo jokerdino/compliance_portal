@@ -6,10 +6,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
 from django.views.generic import DetailView, CreateView
 from django.views.generic.edit import UpdateView
-from django.forms.models import model_to_dict
 from django.utils.timezone import now, localdate
 from django.urls import reverse_lazy, reverse
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponseForbidden
 from django.db.models import Prefetch
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
@@ -21,7 +20,7 @@ from auditlog.context import set_actor
 from django_tables2 import RequestConfig
 from django_tables2.views import SingleTableView
 
-from .models import Template, Task, TaskRemark, Month, PublicHoliday
+from .models import Template, Task, TaskRemark, PublicHoliday
 from .forms import (
     TemplateForm,
     TaskForm,
@@ -506,9 +505,12 @@ def is_working_day(date):
     return True
 
 
-def calculate_due_date(due_date_days, type_of_due_date):
+def calculate_due_date(due_date_days, type_of_due_date, run_date=None):
     """Calculate due date based on due_date_days and type (calendar/working days)."""
-    start_date = now().date()
+    if run_date:
+        start_date = datetime.datetime.strptime(run_date, "%d/%m/%Y").date()
+    else:
+        start_date = now().date()
 
     if type_of_due_date == "calendar":
         return start_date + datetime.timedelta(days=due_date_days - 1)
@@ -520,79 +522,6 @@ def calculate_due_date(due_date_days, type_of_due_date):
             if is_working_day(current_date):
                 days_added += 1
         return current_date
-
-
-def populate_templates(request, recurring_interval):
-    def bulk_create(query):
-        periodical_tasks = []
-        for template in query:
-            task_data = model_to_dict(
-                template,
-                exclude=[
-                    "id",
-                    "repeat_month",
-                    "created_by",
-                    "updated_by",
-                    "due_date_days",
-                    "type_of_due_date",
-                    "recurring_task_status",
-                    "recurring_interval",
-                    "repeat_month",
-                    "department",
-                ],
-            )  # Convert template to dict
-            task_data["due_date"] = calculate_due_date(
-                template.due_date_days, template.type_of_due_date
-            )
-            task_data["created_by_id"] = 1
-            task_data["department_id"] = template.department_id
-            task_data["current_status"] = "pending"
-            task_data["template"] = template
-            periodical_tasks.append(Task(**task_data))  # Create Task instance
-        Task.objects.bulk_create(periodical_tasks)
-
-    periodical_templates = Template.objects.filter(
-        recurring_interval=recurring_interval,
-        recurring_task_status="Active",
-    )
-
-    bulk_create(periodical_templates)
-
-    if recurring_interval == "monthly":
-        today = localdate()
-        month_string = today.strftime("%B")  # Full month name
-        annual_templates = Template.objects.filter(
-            recurring_interval__in=["annual"],
-            repeat_month__month_name=month_string,
-            recurring_task_status="Active",
-        ).distinct()
-        bulk_create(annual_templates)
-
-    return HttpResponse(f"{recurring_interval} tasks populated.")
-
-
-def seed_data_view(request):
-    # Your list of data
-    data_to_seed = [
-        {"month_name": "January"},
-        {"month_name": "February"},
-        {"month_name": "March"},
-        {"month_name": "April"},
-        {"month_name": "May"},
-        {"month_name": "June"},
-        {"month_name": "July"},
-        {"month_name": "August"},
-        {"month_name": "September"},
-        {"month_name": "October"},
-        {"month_name": "November"},
-        {"month_name": "December"},
-    ]
-
-    # Check if data already exists to prevent duplicate seeding
-    if Month.objects.count() == 0:
-        objects_to_create = [Month(**data_item) for data_item in data_to_seed]
-        Month.objects.bulk_create(objects_to_create)
-        return HttpResponse("Database seeded with initial data!")
 
 
 def upload_public_holidays(request):

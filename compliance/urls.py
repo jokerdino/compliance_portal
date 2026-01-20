@@ -25,11 +25,6 @@ urlpatterns = [
         name="template_edit",
     ),
     path(
-        "templates/populate_tasks/<str:recurring_interval>/",
-        views.populate_templates,
-        name="populate_tasks",
-    ),
-    path(
         "tasks/add/",
         views.TaskCreateView.as_view(),
         name="task_add",
@@ -123,11 +118,6 @@ urlpatterns = [
         "tasks/<int:pk>/revise",
         views.task_mark_revision,
         name="task_revise",
-    ),
-    path(
-        "seed_data_month/",
-        views.seed_data_view,
-        name="seed_data_view",
     ),
 ]
 
