@@ -32,7 +32,7 @@
                     </dd>
                     <dt class="col-sm-5">Department</dt>
                     <dd class="col-sm-7">
-                        {{ task.get_department_display|default:"N/A" }}
+                        {{ task.department.department_name|default:"N/A" }}
                     </dd>
                 </dl>
             </div>
@@ -58,7 +58,7 @@
                         <a class="btn btn-sm btn-outline-primary" href="{{ task.circular_url }}" target="_blank">
                             Source circular URL</a>
                         {% else %}
-                        "N/A"
+                        N/A
                         {% endif %}
                     </dd>
                     <dt class="col-sm-5">Circular/Regulation</dt>

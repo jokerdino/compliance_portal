@@ -27,7 +27,7 @@
 
                         <dt class="col-sm-4">Department</dt>
                         <dd class="col-sm-8">
-                            {{ template.get_department_display|default:"N/A" }}
+                            {{ template.department.department_name|default:"N/A" }}
                         </dd>
 
                         <dt class="col-sm-4">Priority</dt>
@@ -146,6 +146,15 @@
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
+                        <dt class="col-sm-4">Source circular URL</dt>
+                        <dd class="col-sm-8">{% if template.circular_url %}
+                            <a class="btn btn-sm btn-outline-primary" href="{{ template.circular_url }}"
+                                target="_blank">
+                                Source circular URL</a>
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </dd>
 
                         <dt class="col-sm-4">Circular Document</dt>
                         <dd class="col-sm-8">
