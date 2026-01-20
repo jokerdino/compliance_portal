@@ -365,7 +365,7 @@ class BaseTaskListView(LoginRequiredMixin, SingleTableView):
     recurrence_url_name = None
     date_filter = None
 
-    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm"}
+    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm", "dept_user"}
 
     RECURRENCE_CHOICES = [
         "all",
