@@ -49,8 +49,11 @@ def tasks_count(request):
             "id",
             filter=Q(
                 current_status="pending",
-                template__type_of_due_date="board_meeting",
-                due_date__isnull=True,
+                template__type_of_due_date__in=[
+                    "board_meeting",
+                    "board_meeting_conditional",
+                ],
+                board_meeting_date_flag=False,
             ),
         ),
     )

@@ -114,10 +114,17 @@
                         <dd class="col-sm-7">
                             {{ template.due_date_days }}
                             {% if template.type_of_due_date %}
-                            ({{ template.type_of_due_date }})
+                            ({{ template.get_type_of_due_date_display }})
                             {% endif %}
                         </dd>
+                        {% if template.type_of_due_date == "board_meeting_conditional" %}
+                        <dt class="col-sm-5">Alternate Due Date (Days)</dt>
+                        <dd class="col-sm-7">
+                            {{ template.alternate_due_date_days }}
+                            ({{ template.get_conditional_operator_display }})
+                        </dd>
 
+                        {% endif %}
                         <dt class="col-sm-5">UIIC Contact</dt>
                         <dd class="col-sm-7">
                             {{ template.uiic_contact|default:"N/A" }}

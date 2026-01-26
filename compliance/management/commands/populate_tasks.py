@@ -49,6 +49,8 @@ class Command(BaseCommand):
                         "updated_by",
                         "due_date_days",
                         "type_of_due_date",
+                        "alternate_due_date_days",
+                        "conditional_operator",
                         "recurring_task_status",
                         "recurring_interval",
                         "department",

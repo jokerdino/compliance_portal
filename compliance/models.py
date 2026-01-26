@@ -39,8 +39,25 @@ class Template(models.Model):
             ("calendar", "Calendar"),
             ("working", "Working"),
             ("board_meeting", "Board meeting"),
+            ("board_meeting_conditional", "Board meeting (conditional)"),
         ),
-    )  # calendar days or working days
+    )
+    alternate_due_date_days = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)],
+        help_text="To be entered if due date type is board meeting conditional (e.g. 180 days)",
+    )
+
+    conditional_operator = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        choices=(
+            ("earlier", "Whichever is earlier"),
+            ("later", "Whichever is later"),
+        ),
+    )
     recurring_task_status = models.CharField(
         max_length=100, choices=(("Active", "Active"), ("Inactive", "Inactive"))
     )  # active or inactive
@@ -133,6 +150,7 @@ class Task(models.Model):
         blank=False,
         null=True,
     )
+    board_meeting_date_flag = models.BooleanField(default=False)
 
     current_status = models.CharField(
         max_length=100,

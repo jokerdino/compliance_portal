@@ -58,4 +58,50 @@
         toggleDependentField();
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const dueDateType = document.getElementById("id_type_of_due_date");
+        const alternateDays = document.getElementById("id_alternate_due_date_days");
+        const conditionalOperator = document.getElementById("id_conditional_operator");
+
+        if (!dueDateType) return;
+
+        function setDisabled(field, disabled) {
+            if (!field) return;
+            field.disabled = disabled;
+
+            // Optional: visually indicate disabled state for Bootstrap
+            const wrapper = field.closest(".mb-3");
+            if (wrapper) {
+                wrapper.classList.toggle("opacity-50", disabled);
+            }
+        }
+
+        function updateFieldStates() {
+            const value = dueDateType.value;
+
+            // Default: everything disabled
+            setDisabled(alternateDays, true);
+            setDisabled(conditionalOperator, true);
+
+            // Board meeting → alternate enabled
+            if (value === "board_meeting") {
+                setDisabled(alternateDays, true);
+            }
+
+            // Board meeting conditional → both enabled
+            if (value === "board_meeting_conditional") {
+                setDisabled(alternateDays, false);
+                setDisabled(conditionalOperator, false);
+            }
+        }
+
+        // Initial state (important for edit forms)
+        updateFieldStates();
+
+        // Update on change
+        dueDateType.addEventListener("change", updateFieldStates);
+    });
+</script>
+
 {% endblock scripts %}

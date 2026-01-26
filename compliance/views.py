@@ -30,7 +30,7 @@ from .forms import (
 )
 from .tables import TemplatesTable, TaskTable, TaskApprovalTable, PublicHolidayTable
 
-from .utils import calculate_due_date
+from .utils import calculate_due_date, calculate_conditional_board_meeting_due_date
 
 
 class PublicHolidayList(SingleTableView):
@@ -509,8 +509,11 @@ class TaskBoardMeetingPendingListView(BaseTaskListView):
         qs = super().get_queryset()
 
         return qs.filter(
-            template__type_of_due_date="board_meeting",
-            due_date__isnull=True,
+            template__type_of_due_date__in=[
+                "board_meeting",
+                "board_meeting_conditional",
+            ],
+            board_meeting_date_flag=False,
         )
 
     def get_context_data(self, **kwargs):
@@ -621,8 +624,8 @@ def bulk_set_board_meeting_date(request):
 
     tasks = Task.objects.filter(
         id__in=task_ids,
-        template__type_of_due_date="board_meeting",
-        due_date__isnull=True,
+        template__type_of_due_date__in=["board_meeting"],
+        board_meeting_date_flag=False,
     )
 
     for task in tasks:
@@ -632,7 +635,22 @@ def bulk_set_board_meeting_date(request):
             meeting_date=board_date,
             due_date_days=task.template.due_date_days,
         )
-        task.save(update_fields=["board_meeting_date", "due_date"])
+        task.board_meeting_date_flag = True
+        task.save(
+            update_fields=["board_meeting_date", "due_date", "board_meeting_date_flag"]
+        )
 
+    conditional_tasks = Task.objects.filter(
+        id__in=task_ids,
+        template__type_of_due_date__in=["board_meeting_conditional"],
+        board_meeting_date_flag=False,
+    )
+    for task in conditional_tasks:
+        task.board_meeting_date = board_date
+        task.due_date = calculate_conditional_board_meeting_due_date(task)
+        task.board_meeting_date_flag = True
+        task.save(
+            update_fields=["board_meeting_date", "due_date", "board_meeting_date_flag"]
+        )
     messages.success(request, f"{tasks.count()} task(s) updated.")
     return redirect("task_list_board_meeting_pending")

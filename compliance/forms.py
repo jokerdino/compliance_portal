@@ -35,6 +35,8 @@ class TemplateForm(forms.ModelForm):
         "Due date": [
             "type_of_due_date",
             "due_date_days",
+            "alternate_due_date_days",
+            "conditional_operator",
         ],
         "Recurrence Settings": [
             "recurring_task_status",
@@ -65,6 +67,8 @@ class TemplateForm(forms.ModelForm):
             "priority",
             "type_of_due_date",
             "due_date_days",
+            "alternate_due_date_days",
+            "conditional_operator",
             "recurring_task_status",
             "recurring_interval",
             "repeat_month",
