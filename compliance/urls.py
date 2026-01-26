@@ -84,6 +84,21 @@ urlpatterns = [
         name="task_list_filtered_recurrence_submitted",
     ),
     path(
+        "tasks/board-meeting/pending/",
+        views.TaskBoardMeetingPendingListView.as_view(),
+        name="task_list_board_meeting_pending",
+    ),
+    path(
+        "tasks/board-meeting/pending/<str:recurrence>",
+        views.TaskBoardMeetingPendingListView.as_view(),
+        name="task_list_board_meeting_pending_recurrence",
+    ),
+    path(
+        "tasks/board-meeting/bulk/",
+        views.bulk_set_board_meeting_date,
+        name="task_board_meeting_bulk",
+    ),
+    path(
         "tasks/<str:filter>/",
         views.TaskListView.as_view(),
         name="task_list",

@@ -1,7 +1,9 @@
 from django import forms
 from django.urls import reverse_lazy
 from django.forms import inlineformset_factory
+
 from .models import Template, Task, TaskRemark
+
 
 TaskRemarkFormSet = inlineformset_factory(
     Task,
@@ -164,4 +166,17 @@ class PublicHolidayUploadForm(forms.Form):
     file = forms.FileField(
         label="Upload Excel File",
         help_text="Accepted formats: .xlsx",
+    )
+
+
+class BoardMeetingBulkForm(forms.Form):
+    board_meeting_date = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "class": "form-control",
+            }
+        ),
+        required=True,
+        label="Board Meeting Date",
     )

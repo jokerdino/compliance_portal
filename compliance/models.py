@@ -35,7 +35,11 @@ class Template(models.Model):
         default="calendar",
         blank=False,
         null=False,
-        choices=(("calendar", "Calendar"), ("working", "Working")),
+        choices=(
+            ("calendar", "Calendar"),
+            ("working", "Working"),
+            ("board_meeting", "Board meeting"),
+        ),
     )  # calendar days or working days
     recurring_task_status = models.CharField(
         max_length=100, choices=(("Active", "Active"), ("Inactive", "Inactive"))
@@ -120,6 +124,11 @@ class Template(models.Model):
 
 class Task(models.Model):
     task_name = models.CharField(max_length=100)
+    board_meeting_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date of board meeting if applicable",
+    )
     due_date = models.DateField(
         blank=False,
         null=True,

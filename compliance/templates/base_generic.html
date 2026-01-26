@@ -76,6 +76,11 @@
                     <a class="nav-link {% if url_name == 'task_add' %}active{% endif %}" href="{% url 'task_add' %}">Add
                         adhoc item
                     </a>
+                    <a class="nav-link {% if url_name == 'task_list_board_meeting_pending' %}active{% endif %}"
+                        href="{% url 'task_list_board_meeting_pending' %}">
+                        Awaiting Board Meeting Date
+                        <span class="badge bg-danger">{{ board_meeting_pending_count }}</span>
+                    </a>
                     {% endif %}
                     {% endif %}
                     <a class="nav-link {% if url_name == 'task_list_submitted' or url_name == 'task_list_filtered_recurrence_submitted' %}active{% endif %}"

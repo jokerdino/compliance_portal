@@ -42,7 +42,16 @@ def tasks_count(request):
         ),
         upcoming_count=Count(
             "id",
-            filter=Q(current_status="pending", due_date__gt=today),
+            filter=Q(current_status="pending")
+            & (Q(due_date__gt=today) | Q(due_date__isnull=True)),
+        ),
+        board_meeting_pending_count=Count(
+            "id",
+            filter=Q(
+                current_status="pending",
+                template__type_of_due_date="board_meeting",
+                due_date__isnull=True,
+            ),
         ),
     )
 

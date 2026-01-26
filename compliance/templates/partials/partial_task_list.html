@@ -31,6 +31,18 @@
 
         {% render_table table %}
     </form>
+    {% elif enable_selection %}
+    <form id="task-selection-form" method="post">
+        {% csrf_token %}
+
+        <div class="mb-3 d-flex gap-2">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#boardMeetingModal">
+                Set Board Meeting Date
+            </button>
+        </div>
+
+        {% render_table table %}
+    </form>
 
     {% else %}
     {% render_table table %}

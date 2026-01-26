@@ -1,15 +1,13 @@
-import datetime
-
 import pandas as pd
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
 from django.views.generic import DetailView, CreateView
 from django.views.generic.edit import UpdateView
-from django.utils.timezone import now, localdate
+from django.utils.timezone import localdate
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseForbidden
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required
@@ -28,8 +26,11 @@ from .forms import (
     DepartmentTaskForm,
     PublicHolidayUploadForm,
     ComplianceTaskForm,
+    BoardMeetingBulkForm,
 )
 from .tables import TemplatesTable, TaskTable, TaskApprovalTable, PublicHolidayTable
+
+from .utils import calculate_due_date
 
 
 class PublicHolidayList(SingleTableView):
@@ -413,7 +414,7 @@ class BaseTaskListView(LoginRequiredMixin, SingleTableView):
         if self.date_filter == "due-today":
             return qs.filter(due_date=today)
         elif self.date_filter == "upcoming":
-            return qs.filter(due_date__gt=today)
+            return qs.filter(Q(due_date__gt=today) | Q(due_date__isnull=True))
         elif self.date_filter == "overdue":
             return qs.filter(due_date__lt=today)
 
@@ -494,34 +495,29 @@ class TaskListView(BaseTaskListView):
         return super().dispatch(request, *args, **kwargs)
 
 
-def is_working_day(date):
-    # weekday(): 0 = Monday, 6 = Sunday
-    if date.weekday() >= 5:  # Saturday or Sunday
-        return False
+class TaskBoardMeetingPendingListView(BaseTaskListView):
+    """
+    Tasks whose due date depends on board meeting
+    and due date has not yet been calculated.
+    """
 
-    if PublicHoliday.objects.filter(date_of_holiday=date).exists():
-        return False
+    status = "pending"
+    recurrence_url_name = "task_list_board_meeting_pending_recurrence"
+    table_class = TaskApprovalTable
 
-    return True
+    def get_queryset(self):
+        qs = super().get_queryset()
 
+        return qs.filter(
+            template__type_of_due_date="board_meeting",
+            due_date__isnull=True,
+        )
 
-def calculate_due_date(due_date_days, type_of_due_date, run_date=None):
-    """Calculate due date based on due_date_days and type (calendar/working days)."""
-    if run_date:
-        start_date = datetime.datetime.strptime(run_date, "%d/%m/%Y").date()
-    else:
-        start_date = now().date()
-
-    if type_of_due_date == "calendar":
-        return start_date + datetime.timedelta(days=due_date_days - 1)
-    else:
-        current_date = start_date
-        days_added = 1 if is_working_day(current_date) else 0
-        while days_added < due_date_days:
-            current_date += datetime.timedelta(days=1)
-            if is_working_day(current_date):
-                days_added += 1
-        return current_date
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["enable_selection"] = True
+        context["board_form"] = BoardMeetingBulkForm()
+        return context
 
 
 def upload_public_holidays(request):
@@ -605,3 +601,38 @@ def task_mark_revision(request, pk):
     )
 
     return redirect("task_detail", pk=task.pk)
+
+
+@login_required
+def bulk_set_board_meeting_date(request):
+    if request.method != "POST":
+        return redirect("task_list_board_meeting_pending")
+
+    form = BoardMeetingBulkForm(request.POST)
+    task_ids_raw = request.POST.get("task_ids", "")
+
+    task_ids = [pk for pk in task_ids_raw.split(",") if pk]
+
+    if not task_ids or not form.is_valid():
+        messages.error(request, "Invalid submission.")
+        return redirect("task_list_board_meeting_pending")
+
+    board_date = form.cleaned_data["board_meeting_date"]
+
+    tasks = Task.objects.filter(
+        id__in=task_ids,
+        template__type_of_due_date="board_meeting",
+        due_date__isnull=True,
+    )
+
+    for task in tasks:
+        task.board_meeting_date = board_date
+        task.due_date = calculate_due_date(
+            type_of_due_date="board_meeting",
+            meeting_date=board_date,
+            due_date_days=task.template.due_date_days,
+        )
+        task.save(update_fields=["board_meeting_date", "due_date"])
+
+    messages.success(request, f"{tasks.count()} task(s) updated.")
+    return redirect("task_list_board_meeting_pending")

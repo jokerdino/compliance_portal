@@ -5,7 +5,7 @@ from django.utils.timezone import localdate
 from django.forms.models import model_to_dict
 
 from compliance.models import Template, Task
-from compliance.views import calculate_due_date
+from compliance.utils import calculate_due_date
 
 
 class Command(BaseCommand):
@@ -55,9 +55,14 @@ class Command(BaseCommand):
                     ],
                 )
 
-                task_data["due_date"] = calculate_due_date(
-                    template.due_date_days, template.type_of_due_date, run_date
-                )
+                if template.type_of_due_date == "board_meeting":
+                    task_data["due_date"] = None
+                else:
+                    task_data["due_date"] = calculate_due_date(
+                        type_of_due_date=template.type_of_due_date,
+                        due_date_days=template.due_date_days,
+                        run_date=run_date,
+                    )
                 task_data["created_by_id"] = 1  # system user
                 task_data["department_id"] = template.department_id
                 task_data["current_status"] = "pending"
