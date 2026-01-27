@@ -37,7 +37,7 @@ from .utils import calculate_due_date, calculate_conditional_board_meeting_due_d
 class PublicHolidayList(SingleTableView):
     model = PublicHoliday
     table_class = PublicHolidayTable
-    template_name = "compliance/public_holiday_list.html"
+    template_name = "public_holiday_list.html"
     table_pagination = False
 
     def dispatch(self, request, *args, **kwargs):
@@ -335,7 +335,7 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
 
 class TaskDetailView(DetailView):
     model = Task
-    template_name = "compliance/task_detail.html"
+    template_name = "task_detail.html"
 
     context_object_name = "task"
 
@@ -400,7 +400,7 @@ class TaskDetailView(DetailView):
 class TemplateListView(LoginRequiredMixin, SingleTableView):
     model = Template
     table_class = TemplatesTable
-    template_name = "compliance/template_table.html"
+    template_name = "template_table.html"
     table_pagination = False
 
     def dispatch(self, request, *args, **kwargs):

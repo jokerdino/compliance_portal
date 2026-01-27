@@ -14,17 +14,20 @@
             </a>
             {% endif %}
             {% if can_request_revision %}
-            <form method="post" action="{% url 'task_revise' task.pk %}" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger me-2">
-                    <i class="bi bi-pencil-square"></i> Revision required
-                </button>
-            </form>
+            <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#revisionModal">
+                <i class="bi bi-pencil-square"></i> Revision required
+            </button>
             {% endif %}
+
             <a href="{% url 'task_list' filter='overdue' %}" class="btn btn-secondary">
                 <i class="bi bi-list"></i> Back to List
             </a>
         </div>
     </div>
 </div>
+
+{% if can_request_revision %}
+{% include "partials/revision_remarks_modal_form.html" %}
+{% endif %}
+
 {% endblock content %}
