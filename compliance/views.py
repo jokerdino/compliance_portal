@@ -88,6 +88,66 @@ class TemplateUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
+class TemplateDuplicateView(LoginRequiredMixin, CreateView):
+    model = Template
+    form_class = TemplateForm
+    template_name = "template_add.html"
+    success_url = reverse_lazy("template_list")
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.user_type != "admin":
+            raise PermissionDenied
+
+        self.source_template = get_object_or_404(Template, pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial.update(self._copy_template_fields(self.source_template))
+        return initial
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+
+        form.fields["repeat_month"].initial = self.source_template.repeat_month.all()
+
+        return form
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+
+        # audit fields
+        obj.created_by = self.request.user
+        obj.updated_by = self.request.user
+
+        obj.pk = None  # explicit, defensive
+        obj.save()
+
+        # ✅ copy M2M fields
+        obj.repeat_month.set(self.source_template.repeat_month.all())
+
+        return redirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Create duplicate template"
+        return context
+
+    def _copy_template_fields(self, source):
+        data = {}
+        for field in source._meta.fields:
+            if field.name in {
+                "id",
+                "created_on",
+                "updated_on",
+                "created_by",
+                "updated_by",
+            }:
+                continue
+            data[field.name] = getattr(source, field.name)
+        return data
+
+
 class TemplateDetailView(DetailView):
     model = Template
     template_name = "template_detail.html"

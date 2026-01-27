@@ -222,6 +222,10 @@
         <a href="{% url 'template_edit' template.pk %}" class="btn btn-warning me-2">
             <i class="bi bi-pencil-square"></i> Edit Template
         </a>
+        <a href="{% url 'template_duplicate' template.id %}" class="btn btn-success">
+            <i class="bi bi-files"></i>
+            Create duplicate template
+        </a>
         <a href="{% url 'task_create_from_template' template.id %}" class="btn btn-primary">
             Create Task from Template
         </a>

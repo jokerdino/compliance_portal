@@ -125,6 +125,11 @@ urlpatterns = [
         name="task_create_from_template",
     ),
     path(
+        "templates/<int:pk>/duplicate/",
+        views.TemplateDuplicateView.as_view(),
+        name="template_duplicate",
+    ),
+    path(
         "public_holiday",
         views.PublicHolidayList.as_view(),
         name="public_holiday_list",
