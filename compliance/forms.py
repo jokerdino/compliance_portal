@@ -188,3 +188,11 @@ class BoardMeetingBulkForm(forms.Form):
         required=True,
         label="Board Meeting Date",
     )
+
+
+class TaskRevisionForm(forms.Form):
+    remark = forms.CharField(
+        label="Remarks",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text="Please explain why revision is required.",
+    )

@@ -27,6 +27,7 @@ from .forms import (
     PublicHolidayUploadForm,
     ComplianceTaskForm,
     BoardMeetingBulkForm,
+    TaskRevisionForm,
 )
 from .tables import TemplatesTable, TaskTable, TaskApprovalTable, PublicHolidayTable
 
@@ -391,6 +392,7 @@ class TaskDetailView(DetailView):
         )
         context["can_request_revision"] = task.can_request_revision(user)
         context["can_edit"] = task.can_edit(user)
+        context["revision_form"] = TaskRevisionForm()
 
         return context
 
@@ -646,26 +648,36 @@ def upload_public_holidays(request):
 
 @login_required
 def task_mark_revision(request, pk):
-    if request.method != "POST":
-        return HttpResponseForbidden("Invalid request method")
-
     if request.user.user_type not in ("staff", "admin"):
         return HttpResponseForbidden("Not authorized")
 
     task = get_object_or_404(Task, pk=pk)
 
-    task.current_status = "revision"
-    task.date_of_document_received = None
-    task.date_of_document_forwarded = None
-    task.save(
-        update_fields=[
-            "current_status",
-            "date_of_document_received",
-            "date_of_document_forwarded",
-        ]
-    )
+    if request.method == "POST":
+        form = TaskRevisionForm(request.POST)
+        if form.is_valid():
+            # Update task
+            task.current_status = "revision"
+            task.date_of_document_received = None
+            task.date_of_document_forwarded = None
+            task.save(
+                update_fields=[
+                    "current_status",
+                    "date_of_document_received",
+                    "date_of_document_forwarded",
+                ]
+            )
 
-    return redirect("task_detail", pk=task.pk)
+            # Save remark
+            TaskRemark.objects.create(
+                task=task,
+                text=form.cleaned_data["remark"],
+                created_by=request.user,
+            )
+
+            return redirect("task_detail", pk=task.pk)
+    else:
+        return HttpResponseForbidden("Invalid request")
 
 
 @login_required
