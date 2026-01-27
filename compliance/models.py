@@ -19,6 +19,12 @@ class PublicHoliday(models.Model):
     date_of_holiday = models.DateField(unique=True)
     name_of_holiday = models.CharField(max_length=200)
 
+    def __str__(self):
+        return self.name_of_holiday
+
+    class Meta:
+        ordering = ["date_of_holiday"]
+
 
 class Template(models.Model):
     task_name = models.CharField(max_length=100)
