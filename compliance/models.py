@@ -210,7 +210,15 @@ class Task(models.Model):
     data_document_template = models.FileField(
         blank=True, null=True, upload_to="data_document_template/"
     )
-    data_document = models.FileField(blank=True, null=True, upload_to="data_document/")
+    data_document = models.FileField(
+        verbose_name="Inbound data document",
+        blank=True,
+        null=True,
+        upload_to="data_document/",
+    )
+    outbound_data_document = models.FileField(
+        blank=True, null=True, upload_to="outbound_data_document/"
+    )
     priority = models.IntegerField(
         blank=True,
         null=True,

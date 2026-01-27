@@ -131,7 +131,7 @@
                         N/A
                         {% endif %}
                     </dd>
-                    <dt class="col-sm-8">Data Document</dt>
+                    <dt class="col-sm-8">Inbound data document</dt>
                     <dd class="col-sm-4">
                         {% if task.data_document %}
                         <a href="{{ task.data_document.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
@@ -141,7 +141,7 @@
                         N/A
                         {% endif %}
                     </dd>
-                    <dt class="col-sm-8">Inbound Email Communication</dt>
+                    <dt class="col-sm-8">Inbound email communication</dt>
                     <dd class="col-sm-4">
                         {% if task.inbound_email_communication %}
                         <a href="{{ task.inbound_email_communication.url }}" target="_blank"
@@ -152,10 +152,21 @@
                         N/A
                         {% endif %}
                     </dd>
-                    <dt class="col-sm-8">Outbound Email Communication</dt>
+                    <dt class="col-sm-8">Outbound email communication</dt>
                     <dd class="col-sm-4">
                         {% if task.outbound_email_communication %}
                         <a href="{{ task.outbound_email_communication.url }}" target="_blank"
+                            class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-envelope-out"></i> View File
+                        </a>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </dd>
+                    <dt class="col-sm-8">Outbound data document</dt>
+                    <dd class="col-sm-4">
+                        {% if task.outbound_data_document %}
+                        <a href="{{ task.outbound_data_document.url }}" target="_blank"
                             class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-envelope-out"></i> View File
                         </a>

@@ -313,7 +313,8 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
             if self.request.user.user_type in self.COMPLIANCE_DEPT_USERS:
                 inbound_email = form.cleaned_data.get("inbound_email_communication")
                 outbound_email = form.cleaned_data.get("outbound_email_communication")
-                if inbound_email and outbound_email:
+                outbound_data = form.cleaned_data.get("outbound_data_document")
+                if inbound_email and outbound_email and outbound_data:
                     self.object.current_status = "submitted"
                     self.object.date_of_document_forwarded = localdate()
 

@@ -162,7 +162,11 @@ class DepartmentTaskForm(forms.ModelForm):
 class ComplianceTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ["inbound_email_communication", "outbound_email_communication"]
+        fields = [
+            "inbound_email_communication",
+            "outbound_email_communication",
+            "outbound_data_document",
+        ]
 
 
 class PublicHolidayUploadForm(forms.Form):

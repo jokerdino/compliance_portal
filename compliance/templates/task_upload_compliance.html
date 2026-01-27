@@ -18,15 +18,17 @@
 
                     <div class="row">
 
-                        <div class="col-lg-6">
+                        <div class="col-lg-4">
                             {% bootstrap_field form.inbound_email_communication layout="vertical" %}
                         </div>
-                        <div class="col-lg-6">
+                        <div class="col-lg-4">
                             {% bootstrap_field form.outbound_email_communication layout="vertical" %}
+                        </div>
+                        <div class="col-lg-4">
+                            {% bootstrap_field form.outbound_data_document layout="vertical" %}
                         </div>
                     </div>
 
-                    <hr />
                     <h5 class="mt-4 text-secondary">Add New Remarks</h5>
 
                     {{ remarks_formset.management_form }}
