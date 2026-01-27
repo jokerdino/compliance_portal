@@ -82,6 +82,7 @@ class Template(models.Model):
             ("quarterly", "Quarterly"),
             ("halfyearly", "Halfyearly"),
             ("annual", "Annual"),
+            ("public_disclosure", "Public disclosure"),
         ),
     )  # adhoc/daily/weekly/monthly/quarterly/etc
     recurring_interval = models.CharField(
@@ -192,6 +193,7 @@ class Task(models.Model):
             ("quarterly", "Quarterly"),
             ("halfyearly", "Halfyearly"),
             ("annual", "Annual"),
+            ("public_disclosure", "Public disclosure"),
         ),
     )  # adhoc/daily/weekly/monthly/quarterly/etc
 

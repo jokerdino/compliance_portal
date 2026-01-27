@@ -437,6 +437,7 @@ class BaseTaskListView(LoginRequiredMixin, SingleTableView):
         "quarterly",
         "halfyearly",
         "annual",
+        "public_disclosure",
     ]
 
     def get_context_data(self, **kwargs):
