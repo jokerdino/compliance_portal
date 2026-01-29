@@ -27,9 +27,7 @@ SECRET_KEY = "django-insecure-^tt(6z4s9-sqhee7vd(x#myc3tz3^a*d)h*mc**itslie=4+%k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False  # True
 
-ALLOWED_HOSTS = ["cfac.uiic.in"]
-
-FORCE_SCRIPT_NAME = "/compliance"
+ALLOWED_HOSTS = ["irdaicompliance.uiic.com"]  # ["cfac.uiic.in"]
 
 
 # Application definition
@@ -115,9 +113,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = "accounts.CustomUser"
 
-LOGIN_URL = f"{FORCE_SCRIPT_NAME}/accounts/login/"
+LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = reverse_lazy("task_list", args=["overdue"])
-LOGOUT_REDIRECT_URL = f"{FORCE_SCRIPT_NAME}/accounts/login/"  # optional fallback
+LOGOUT_REDIRECT_URL = "/accounts/login/"  # optional fallback
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -134,7 +132,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = f"{FORCE_SCRIPT_NAME}/static/"
+STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [
     BASE_DIR / "staticfiles",
@@ -146,10 +144,8 @@ MEDIA_URL = "/media/"
 # MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_ROOT = Path("/var/www/media/")
 BOOTSTRAP5 = {
-    "css_url": {"url": f"{FORCE_SCRIPT_NAME}/static/bootstrap/css/bootstrap.min.css"},
-    "javascript_url": {
-        "url": f"{FORCE_SCRIPT_NAME}/static/bootstrap/js/bootstrap.bundle.min.js"
-    },
+    "css_url": {"url": "/static/bootstrap/css/bootstrap.min.css"},
+    "javascript_url": {"url": "/static/bootstrap/js/bootstrap.bundle.min.js"},
 }
 
 # Default primary key field type
