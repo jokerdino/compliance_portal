@@ -2,7 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.conf import settings
 from django.core.validators import MinValueValidator
-from django.utils import timezone
+from django.utils.timezone import localdate
 
 from auditlog.registry import auditlog
 
@@ -363,8 +363,8 @@ class Task(models.Model):
         if not self.last_reminder_on:
             return True
 
-        today = timezone.localdate()
-        last_sent_date = timezone.localdate(self.last_reminder_on)
+        today = localdate()
+        last_sent_date = localdate(self.last_reminder_on)
 
         return last_sent_date != today
 
