@@ -9,10 +9,9 @@ from django.utils.timezone import localdate
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 
-from .models import EmailLog
 
+from .models import EmailLog, PublicHoliday
 
-from .models import PublicHoliday
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +150,7 @@ def send_email_and_log(
             task=task,
             email_type=email_type,
             subject=subject,
-            to=",".join(recipients),
+            to=recipients,
             sent_by=user,
             status="success",
         )
@@ -162,7 +161,7 @@ def send_email_and_log(
             task=task,
             email_type=email_type,
             subject=subject,
-            to=",".join(recipients),
+            to=recipients,
             sent_by=user,
             status="failed",
             error_message=str(exc),
