@@ -276,6 +276,8 @@ class Task(models.Model):
         null=True,
         blank=True,
     )
+    reminder_email_count = models.IntegerField(null=False, blank=True, default=0)
+    last_reminder_on = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.task_name
@@ -351,8 +353,70 @@ class Task(models.Model):
             return False
         return self.due_date < timezone.now().date()
 
+    def can_send_reminder_email(self, user) -> bool:
+        if not user or not user.is_authenticated:
+            return False
+        if user.user_type != "admin":
+            return False
+        if self.current_status == "submitted":
+            return False
+        if not self.last_reminder_on:
+            return True
+
+        today = timezone.localdate()
+        last_sent_date = timezone.localdate(self.last_reminder_on)
+
+        return last_sent_date != today
+
     class Meta:
         ordering = ["due_date", "priority"]
+
+
+class EmailLog(models.Model):
+    EMAIL_TYPES = (
+        ("task_created", "Task Created"),
+        ("task_reminder", "Task Reminder"),
+        ("task_revision", "Task Revision"),
+    )
+
+    task = models.ForeignKey(
+        "Task",
+        on_delete=models.CASCADE,
+        related_name="email_logs",
+        null=True,
+        blank=True,
+    )
+
+    email_type = models.CharField(max_length=50, choices=EMAIL_TYPES)
+
+    subject = models.CharField(max_length=255)
+
+    to = models.TextField()  # comma-separated
+    cc = models.TextField(blank=True)
+    bcc = models.TextField(blank=True)
+
+    sent_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=(
+            ("success", "Success"),
+            ("failed", "Failed"),
+        ),
+        default="success",
+    )
+
+    error_message = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-sent_at"]
 
 
 class TaskRemark(models.Model):

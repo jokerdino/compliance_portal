@@ -32,7 +32,18 @@
                 <i class="bi bi-arrow-counterclockwise"></i> Revision required
             </button>
             {% endif %}
+            {% if can_send_reminder_email %}
 
+            <form method="post" action="{% url 'task_remind' task.pk %}">
+                {% csrf_token %}
+
+                <button type="submit" class="btn btn-danger me-2"
+                    onclick="return confirm('Send reminder email for this task?');">
+                    🔔 Send Reminder
+                </button>
+            </form>
+
+            {% endif %}
             <a href="{% url 'task_list' filter='overdue' %}" class="btn btn-secondary">
                 <i class="bi bi-list"></i> Back to List
             </a>

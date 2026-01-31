@@ -170,6 +170,11 @@ urlpatterns = [
         name="publication_update",
     ),
     path("publication/", views.PublicationListView.as_view(), name="publication_list"),
+    path(
+        "tasks/<int:pk>/remind",
+        views.task_send_reminder_email,
+        name="task_remind",
+    ),
 ]
 
 urlpatterns += [path("", RedirectView.as_view(url="tasks/due-today/", permanent=True))]

@@ -9,12 +9,14 @@ from .models import (
     Month,
     TaskRemark,
     RegulatoryPublication,
+    EmailLog,
 )
 
 
 admin.site.register(Month)
 admin.site.register(TaskRemark)
 admin.site.register(RegulatoryPublication)
+admin.site.register(EmailLog)
 
 
 @admin.register(PublicHoliday)
