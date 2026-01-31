@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="keywords" content="Lien" />
+    <meta name="description" content="Lien" />
+    <title>Lien</title>
+    <style>
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .header {
+            margin-bottom: 15px;
+        }
+
+        body {
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            font-size: small;
+        }
+    </style>
+</head>
+
+<body>
+
+    <table border="1" cellpadding="4" cellspacing="0" width="50%">
+        <tr>
+            <th width="20%">Lien ID</th>
+            <td>{{ task.id }}</td>
+        </tr>
+
+    </table>
+
+    {% if task.data_document_template %}
+    <p>
+        Please find attached the relevant court order.
+    </p>
+    {% endif %}
+
+    {{ remarks }}
+
+</body>
+
+</html>
