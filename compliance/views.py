@@ -197,7 +197,7 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         task = self.object  # saved instance
 
         html_content = render_to_string(
-            "partials/task_creation_email_template.html", context={"task": task}
+            "email_templates/task_creation_email_template.html", context={"task": task}
         )
 
         attachments = []
@@ -211,11 +211,14 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         # if not recipients:
         #     return  # avoid mail errors
         send_email_async(
-            subject="Subject here",
+            task=task,
+            email_type="task_created",
+            subject="Task created",
             body="Here is the message.",
             recipients=["barneedhar@uiic.co.in"],
             attachments=attachments,
             html=html_content,
+            user=self.request.user,
         )
         print("email sent")
         # send_mail(
@@ -739,13 +742,35 @@ def task_mark_revision(request, pk):
                 ]
             )
 
+            remarks = form.cleaned_data["remark"]
             # Save remark
             TaskRemark.objects.create(
                 task=task,
-                text=form.cleaned_data["remark"],
+                text=remarks,
                 created_by=request.user,
             )
 
+            html_content = render_to_string(
+                "email_templates/task_revision_email_template.html",
+                context={"task": task, "remarks": remarks},
+            )
+
+            attachments = []
+            if task.data_document_template:
+                attachments.append(task.data_document_template.path)
+            if task.data_document:
+                attachments.append(task.data_document.path)
+
+            send_email_async(
+                task=task,
+                email_type="task_revision",
+                subject="This needs revision",
+                body="Here is the message.",
+                recipients=["barneedhar@uiic.co.in"],
+                attachments=attachments,
+                html=html_content,
+                user=request.user,
+            )
             return redirect("task_detail", pk=task.pk)
     else:
         return HttpResponseForbidden("Invalid request")
@@ -945,7 +970,7 @@ def task_send_reminder_email(request, pk):
         # saved instance
 
         html_content = render_to_string(
-            "partials/task_reminder_email_template.html", context={"task": task}
+            "email_templates/task_reminder_email_template.html", context={"task": task}
         )
         reminder_count = task.reminder_email_count + 1
         attachments = []
@@ -964,6 +989,7 @@ def task_send_reminder_email(request, pk):
         )
         task.reminder_email_count += 1
         task.last_reminder_on = now()
+        task.updated_by = request.user
         task.save()
 
         return redirect("task_detail", pk=task.pk)

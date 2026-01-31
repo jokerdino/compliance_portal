@@ -358,7 +358,7 @@ class Task(models.Model):
             return False
         if user.user_type != "admin":
             return False
-        if self.current_status == "submitted":
+        if self.current_status in ["submitted", "review"]:
             return False
         if not self.last_reminder_on:
             return True
