@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 
-from django.utils.timezone import now
+from django.utils.timezone import localdate
 
 
 from .models import PublicHoliday
@@ -19,7 +19,7 @@ def calculate_due_date(
     if run_date:
         start_date = datetime.strptime(run_date, "%d/%m/%Y").date()
     else:
-        start_date = now().date()
+        start_date = localdate()
 
     if type_of_due_date in ["calendar", "board_meeting_conditional"]:
         return start_date + timedelta(days=due_date_days - 1)
