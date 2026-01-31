@@ -2,11 +2,12 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Template, Task, PublicHoliday, Month, TaskRemark
+from .models import Template, Task, PublicHoliday, Month, TaskRemark, EmailLog
 
 
 admin.site.register(Month)
 admin.site.register(TaskRemark)
+admin.site.register(EmailLog)
 
 
 @admin.register(PublicHoliday)

@@ -149,6 +149,11 @@ urlpatterns = [
         views.task_mark_approve,
         name="task_approve",
     ),
+    path(
+        "tasks/<int:pk>/remind",
+        views.task_send_reminder_email,
+        name="task_remind",
+    ),
 ]
 
 urlpatterns += [path("", RedirectView.as_view(url="tasks/due-today/", permanent=True))]

@@ -1,10 +1,20 @@
 from datetime import datetime, timedelta
+from pathlib import Path
+import mimetypes
+import threading
+import logging
 
 
 from django.utils.timezone import localdate
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
+
+from .models import EmailLog
 
 
 from .models import PublicHoliday
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_due_date(
@@ -63,3 +73,98 @@ def is_working_day(date):
         return False
 
     return True
+
+
+def send_email(
+    *,
+    subject: str,
+    recipients: list[str],
+    cc: list[str] | None = None,
+    bcc: list[str] | None = None,
+    body: str,
+    html: str | None = None,
+    attachments: list[str | Path] | None = None,
+):
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=recipients,
+        cc=cc or [],
+        bcc=bcc or [],
+    )
+
+    if html:
+        email.attach_alternative(html, "text/html")
+
+    if attachments:
+        for file_path in attachments:
+            path = Path(file_path)
+            if not path.exists():
+                raise FileNotFoundError(path)
+
+            mime_type, _ = mimetypes.guess_type(path)
+            email.attach_file(
+                path,
+                mime_type or "application/octet-stream",
+            )
+
+    email.send(fail_silently=False)
+
+
+def send_email_async(**kwargs):
+    def _send():
+        try:
+            send_email_and_log(**kwargs)
+            print("test")
+        except Exception:
+            logger.exception("Email sending failed")
+
+    threading.Thread(
+        target=_send,
+        daemon=True,
+    ).start()
+
+
+def send_email_and_log(
+    *,
+    task,
+    email_type,
+    subject,
+    recipients,
+    body,
+    html=None,
+    attachments=None,
+    user=None,
+):
+    try:
+        print("test2")
+        send_email(
+            subject=subject,
+            recipients=recipients,
+            body=body,
+            html=html,
+            attachments=attachments,
+        )
+        print("test3")
+        EmailLog.objects.create(
+            task=task,
+            email_type=email_type,
+            subject=subject,
+            to=",".join(recipients),
+            sent_by=user,
+            status="success",
+        )
+        print("test4")
+
+    except Exception as exc:
+        EmailLog.objects.create(
+            task=task,
+            email_type=email_type,
+            subject=subject,
+            to=",".join(recipients),
+            sent_by=user,
+            status="failed",
+            error_message=str(exc),
+        )
+        raise

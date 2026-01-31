@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
 from django.views.generic import DetailView, CreateView
 from django.views.generic.edit import UpdateView
-from django.utils.timezone import localdate
+from django.utils.timezone import localdate, now
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseForbidden
 from django.db.models import Prefetch, Q
@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.template.loader import render_to_string
 
 from auditlog.models import LogEntry
 from auditlog.context import set_actor
@@ -31,7 +32,11 @@ from .forms import (
 )
 from .tables import TemplatesTable, TaskTable, TaskApprovalTable, PublicHolidayTable
 
-from .utils import calculate_due_date, calculate_conditional_board_meeting_due_date
+from .utils import (
+    calculate_due_date,
+    calculate_conditional_board_meeting_due_date,
+    send_email_async,
+)
 
 
 class PublicHolidayList(SingleTableView):
@@ -176,7 +181,48 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         form.instance.updated_by = self.request.user
-        return super().form_valid(form)
+
+        response = super().form_valid(form)  # object is saved here
+        self.send_task_created_email()
+        return response
+
+    def send_task_created_email(self):
+        task = self.object  # saved instance
+
+        html_content = render_to_string(
+            "partials/task_creation_email_template.html", context={"task": task}
+        )
+
+        attachments = []
+        if task.data_document_template:
+            attachments.append(task.data_document_template.path)
+
+        # recipients = []
+        # # if task.assigned_to and task.assigned_to.email:
+        # #     recipients.append(task.assigned_to.email)
+
+        # if not recipients:
+        #     return  # avoid mail errors
+        send_email_async(
+            subject="Subject here",
+            body="Here is the message.",
+            recipients=["barneedhar@uiic.co.in"],
+            attachments=attachments,
+            html=html_content,
+        )
+        print("email sent")
+        # send_mail(
+        #     subject=f"New Task Assigned: {task.task_name}",
+        #     message=(
+        #         f"A new task has been created.\n\n"
+        #         f"Title: {task.task_name}\n"p[]
+        #         f"Due date: {task.due_date}\n"
+        #         f"Created by: {task.created_by}\n"
+        #     ),
+        #     from_email="policy.noreply@uiic.co.in",
+        #     recipient_list=["barneedhar@uiic.co.in"],
+        #     fail_silently=False,
+        # )
 
 
 class TaskCreateFromTemplateView(CreateView):
@@ -395,6 +441,7 @@ class TaskDetailView(DetailView):
         context["can_mark_as_pending"] = task.can_mark_as_pending(user)
         context["can_edit"] = task.can_edit(user)
         context["revision_form"] = TaskRevisionForm()
+        context["can_send_reminder_email"] = task.can_send_reminder_email(user)
 
         return context
 
@@ -777,3 +824,40 @@ def bulk_set_board_meeting_date(request):
         )
     messages.success(request, f"{tasks.count()} task(s) updated.")
     return redirect("task_list_board_meeting_pending")
+
+
+@login_required
+def task_send_reminder_email(request, pk):
+    if request.user.user_type not in ("staff", "admin"):
+        return HttpResponseForbidden("Not authorized")
+
+    task = get_object_or_404(Task, pk=pk)
+
+    if request.method == "POST":
+        # saved instance
+
+        html_content = render_to_string(
+            "partials/task_reminder_email_template.html", context={"task": task}
+        )
+        reminder_count = task.reminder_email_count + 1
+        attachments = []
+        if task.data_document_template:
+            attachments.append(task.data_document_template.path)
+
+        send_email_async(
+            task=task,
+            email_type="task_reminder",
+            subject=f"Reminder #{reminder_count}: This is a reminder email",
+            body="Here is the message.",
+            recipients=["barneedhar@uiic.co.in"],
+            attachments=attachments,
+            html=html_content,
+            user=request.user,
+        )
+        task.reminder_email_count += 1
+        task.last_reminder_on = now()
+        task.save()
+
+        return redirect("task_detail", pk=task.pk)
+    else:
+        return HttpResponseForbidden("Invalid request")
