@@ -7,6 +7,8 @@ from auditlog.registry import auditlog
 
 from accounts.models import Department
 
+from .mail_utils import parse_email_list
+
 
 class Month(models.Model):
     month_name = models.CharField(unique=True)
@@ -308,6 +310,9 @@ class Task(models.Model):
             return True
 
         return False
+
+    def uiic_emails(self) -> list[str]:
+        return parse_email_list(self.uiic_contact)
 
     class Meta:
         ordering = ["due_date", "priority"]

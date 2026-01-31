@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from django.forms import inlineformset_factory
 
 from .models import Template, Task, TaskRemark
+from .mail_utils import parse_email_list
 
 
 TaskRemarkFormSet = inlineformset_factory(
@@ -92,6 +93,15 @@ class TemplateForm(forms.ModelForm):
 
         return due_date_days
 
+    def clean_uiic_contact(self):
+        value = self.cleaned_data["uiic_contact"]
+        emails = parse_email_list(value)
+
+        if not emails:
+            raise forms.ValidationError("Enter at least one valid email address.")
+
+        return ", ".join(emails)
+
 
 class TaskForm(forms.ModelForm):
     fieldsets = {
@@ -149,6 +159,15 @@ class TaskForm(forms.ModelForm):
             "date_of_document_forwarded": forms.DateInput(attrs={"type": "date"}),
             "date_of_document_received": forms.DateInput(attrs={"type": "date"}),
         }
+
+    def clean_uiic_contact(self):
+        value = self.cleaned_data["uiic_contact"]
+        emails = parse_email_list(value)
+
+        if not emails:
+            raise forms.ValidationError("Enter at least one valid email address.")
+
+        return ", ".join(emails)
 
 
 class DepartmentTaskForm(forms.ModelForm):
