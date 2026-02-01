@@ -210,7 +210,9 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         html_content = render_to_string(
             "email_templates/task_creation_email_template.html", context={"task": task}
         )
-
+        text_content = render_to_string(
+            "email_templates/task_creation_email_template.txt", context={"task": task}
+        )
         attachments = []
         if task.data_document_template:
             attachments.append(task.data_document_template.path)
@@ -227,8 +229,8 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         send_email_async(
             task=task,
             email_type="task_created",
-            subject="Task created",
-            body="Here is the message.",
+            subject=f"New IRDAI Compliance task {task.task_name} created",
+            body=text_content,
             recipients=task.uiic_emails(),
             cc=cc_list,
             bcc=["44515"],
@@ -760,6 +762,10 @@ def task_mark_revision(request, pk):
                 "email_templates/task_revision_email_template.html",
                 context={"task": task, "remarks": remarks},
             )
+            text_content = render_to_string(
+                "email_templates/task_revision_email_template.txt",
+                context={"task": task},
+            )
 
             attachments = []
             if task.data_document_template:
@@ -779,8 +785,8 @@ def task_mark_revision(request, pk):
             send_email_async(
                 task=task,
                 email_type="task_revision",
-                subject="This needs revision",
-                body="Here is the message.",
+                subject=f"IRDAI Compliance task {task.task_name} requires revision",
+                body=text_content,
                 recipients=task.uiic_emails(),
                 cc=cc_list,
                 bcc=["44515"],
@@ -989,6 +995,9 @@ def task_send_reminder_email(request, pk):
         html_content = render_to_string(
             "email_templates/task_reminder_email_template.html", context={"task": task}
         )
+        text_content = render_to_string(
+            "email_templates/task_reminder_email_template.txt", context={"task": task}
+        )
         reminder_count = task.reminder_email_count + 1
         attachments = []
         if task.data_document_template:
@@ -1006,8 +1015,8 @@ def task_send_reminder_email(request, pk):
         send_email_async(
             task=task,
             email_type="task_reminder",
-            subject=f"Reminder #{reminder_count}: This is a reminder email",
-            body="Here is the message.",
+            subject=f"Reminder #{reminder_count}: IRDAI Compliance task {task.task_name} is still pending",
+            body=text_content,
             recipients=task.uiic_emails(),
             cc=cc_list,
             bcc=["44515"],

@@ -115,7 +115,7 @@ def send_email_async(**kwargs):
     def _send():
         try:
             send_email_and_log(**kwargs)
-            print("test")
+
         except Exception:
             logger.exception("Email sending failed")
 
@@ -139,7 +139,6 @@ def send_email_and_log(
     user=None,
 ):
     try:
-        print("test2")
         send_email(
             subject=subject,
             recipients=recipients,
@@ -149,7 +148,7 @@ def send_email_and_log(
             html=html,
             attachments=attachments,
         )
-        print("test3")
+
         EmailLog.objects.create(
             task=task,
             email_type=email_type,
@@ -160,7 +159,6 @@ def send_email_and_log(
             sent_by=user,
             status="success",
         )
-        print("test4")
 
     except Exception as exc:
         EmailLog.objects.create(

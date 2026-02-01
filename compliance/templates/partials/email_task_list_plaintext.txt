@@ -1,0 +1,9 @@
+---------------------------------------------------------------
+ # | Department           | Compliance Type | Task Name           | Due Date   | Status
+---------------------------------------------------------------
+{% for task in tasks %}
+{{ forloop.counter|stringformat:"2s" }} | {{ task.department.department_name|truncatechars:18|stringformat:"-18s" }} | {{ task.type_of_compliance|truncatechars:15|stringformat:"-15s" }} | {{ task.task_name|truncatechars:18|stringformat:"-18s" }} | {% if task.due_date %}{{ task.due_date|date:"d/m/Y" }}{% else %}N/A      {% endif %} | {{ task.get_current_status_display }}
+{% endfor %}
+---------------------------------------------------------------
+Total Tasks: {{ tasks|length }}
+---------------------------------------------------------------

@@ -1,0 +1,9 @@
+-----------------------------------------
+TASK DETAILS
+-----------------------------------------
+Task Name          : {{ task.task_name }}
+Department         : {{ task.department.department_name }}
+Due Date           : {% if task.due_date %}{{ task.due_date|date:"d-m-Y" }}{% else %}-{% endif %}
+Current Status     : {{ task.get_current_status_display }}
+Type of Compliance : {{ task.get_type_of_compliance_display }}
+-----------------------------------------
