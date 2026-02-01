@@ -1,6 +1,6 @@
 Dear User,
 
-The following tasks are available for review:
+The following task{{ tasks|length|pluralize }} {{ tasks|length|pluralize:"is,are" }} available for review:
 
 {% include "partials/email_task_list_plaintext.txt" with tasks=tasks %}
 

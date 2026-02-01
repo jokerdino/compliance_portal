@@ -31,7 +31,8 @@
     <p>Dear Sir / Madam,</p>
 
     <p>
-        The following tasks are due today (<strong>{{ date }}</strong>)
+        The following task{{ tasks|length|pluralize }} {{ tasks|length|pluralize:"is,are" }} due today
+        (<strong>{{ date }}</strong>)
         for <strong>{{ department.department_name }}:</strong>
     </p>
 

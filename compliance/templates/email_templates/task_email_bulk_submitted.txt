@@ -1,6 +1,6 @@
 Dear Sir / Madam,
 
-The following tasks were submitted to the Authority on {{ date }} for department: {{ department.department_name }}
+The following task{{ tasks|length|pluralize }} {{ tasks|length|pluralize:"was,were" }} submitted to the Authority today  ({{ date }}) for department: {{ department.department_name }}
 
   {% include "partials/email_task_list_plaintext.txt" with tasks=tasks %}
 

@@ -31,8 +31,9 @@
     <p>Dear Sir / Madam,</p>
 
     <p>
-        The following tasks are available for approval for <strong>{{ department.department_name }}: </strong>
-
+        The following task{{ tasks|length|pluralize }}
+        {{ tasks|length|pluralize:"is,are" }}
+        available for approval for <strong>{{ department.department_name }}</strong>:
     </p>
     {% include "partials/email_task_list.html" with tasks=tasks %}
 

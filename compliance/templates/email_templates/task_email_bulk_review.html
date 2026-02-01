@@ -31,7 +31,7 @@
     <p>Dear Sir / Madam,</p>
 
     <p>
-        The following tasks are available for review:
+        The following task{{ tasks|length|pluralize }} {{ tasks|length|pluralize:"is,are" }} available for review:
     </p>
 
     {% include "partials/email_task_list.html" with tasks=tasks %}
