@@ -1,0 +1,17 @@
+Dear Sir / Madam,
+
+The following task is still pending for submission:
+
+
+    {% include "partials/email_task_table_plaintext.txt" with task=task %}
+
+     {% if task.data_document_template %}
+    <p>
+        Please find attached the data document format.
+    </p>
+    {% endif %}
+
+
+Please login to the Compliance Portal for more details.
+
+This is an automated email. Please do not reply.

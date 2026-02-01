@@ -1,0 +1,34 @@
+<table border="1" cellpadding="4" cellspacing="0" width="70%">
+
+    <tr>
+        <th width="25%">Task Name</th>
+        <td>{{ task.task_name }}</td>
+    </tr>
+
+    <tr>
+        <th>Department</th>
+        <td>{{ task.department.department_name }}</td>
+    </tr>
+
+    <tr>
+        <th>Due Date</th>
+        <td>
+            {% if task.due_date %}
+            {{ task.due_date|date:"d-m-Y" }}
+            {% else %}
+            -
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <th>Current Status</th>
+        <td>{{ task.get_current_status_display }}</td>
+    </tr>
+
+    <tr>
+        <th>Type of Compliance</th>
+        <td>{{ task.get_type_of_compliance_display }}</td>
+    </tr>
+
+</table>

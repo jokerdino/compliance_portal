@@ -1,0 +1,27 @@
+<table border="1" cellpadding="4" cellspacing="0" width="70%">
+    <tr>
+        <th>#</th>
+        <th>Department name</th>
+        <th>Type of compliance</th>
+        <th>Task Name</th>
+        <th>Due Date</th>
+        <th>Status</th>
+    </tr>
+
+    {% for task in tasks %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ task.department.department_name }}</td>
+        <td>{{ task.type_of_compliance }}</td>
+        <td>{{ task.task_name }}</td>
+        <td>
+            {% if task.due_date %}
+            {{ task.due_date|date:"d/m/Y" }}
+            {% else %}
+            N/A
+            {% endif %}
+        </td>
+        <td>{{ task.get_current_status_display }}</td>
+    </tr>
+    {% endfor %}
+</table>

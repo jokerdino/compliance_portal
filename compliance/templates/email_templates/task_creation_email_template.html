@@ -5,9 +5,9 @@
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="keywords" content="Lien" />
-    <meta name="description" content="Lien" />
-    <title>Lien</title>
+    <meta name="keywords" content="IRDAI Compliance" />
+    <meta name="description" content="IRDAI Compliance" />
+    <title>IRDAI Compliance</title>
     <style>
         th,
         td {
@@ -29,17 +29,11 @@
 
 <body>
 
-    <table border="1" cellpadding="4" cellspacing="0" width="50%">
-        <tr>
-            <th width="20%">Lien ID</th>
-            <td>{{ task.id }}</td>
-        </tr>
-
-    </table>
+    {% include "partials/email_task_table.html" with task=task %}
 
     {% if task.data_document_template %}
     <p>
-        Please find attached the relevant court order.
+        Please find attached the data document format.
     </p>
     {% endif %}
 

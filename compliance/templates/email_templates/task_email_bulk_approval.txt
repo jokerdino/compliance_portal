@@ -1,0 +1,9 @@
+Dear Sir / Madam,
+
+The following tasks are available for approval for department: {{ department.department_name }}
+
+  {% include "partials/email_task_list_plaintext.txt" with tasks=tasks %}
+
+Please login to the Compliance Portal for more details.
+
+This is an automated email. Please do not reply.
