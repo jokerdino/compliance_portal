@@ -17,7 +17,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         today = timezone.localdate()
 
-        tasks = Task.objects.filter(due_date=today).select_related("department")
+        tasks = Task.objects.filter(
+            due_date=today, current_status__in=["pending", "to_be_approved"]
+        ).select_related("department")
 
         if not tasks.exists():
             self.stdout.write("No tasks are due today. No emails sent.")

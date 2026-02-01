@@ -30,7 +30,9 @@ class Command(BaseCommand):
         # Calculate target due date dynamically
         target_date = today - timezone.timedelta(days=overdue_days)
 
-        tasks = Task.objects.filter(due_date=target_date).select_related("department")
+        tasks = Task.objects.filter(
+            due_date=target_date, current_status__in=["pending", "to_be_approved"]
+        ).select_related("department")
 
         if not tasks.exists():
             self.stdout.write(
