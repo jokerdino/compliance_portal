@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.forms import inlineformset_factory
 
 from .models import Template, Task, TaskRemark
-from .mail_utils import parse_email_list
+from .mail_utils.parse_emails import parse_email_list
 
 
 TaskRemarkFormSet = inlineformset_factory(
