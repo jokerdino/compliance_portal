@@ -37,6 +37,7 @@ class UserTable(tables.Table):
             "username",
             "user_type",
             "department",
+            "email_address",
             "reset_password",
             "last_login",
             "view",

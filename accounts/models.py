@@ -56,6 +56,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
     )
     department = models.ForeignKey(Department, on_delete=models.PROTECT, null=True)
+    email_address = models.EmailField(
+        max_length=254, unique=False, null=True, blank=True
+    )
     reset_password = models.BooleanField(default=False)
     last_login = models.DateTimeField(blank=True, null=True)
 

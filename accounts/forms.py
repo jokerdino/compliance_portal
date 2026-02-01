@@ -25,17 +25,13 @@ class CustomLoginForm(AuthenticationForm):
 class UserCreateForm(forms.ModelForm):
     class Meta:
         model = get_user_model()
-        fields = ["username", "user_type", "department"]
+        fields = ["username", "user_type", "department", "email_address"]
 
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = get_user_model()
-        fields = [
-            "user_type",
-            "department",
-            "reset_password",
-        ]
+        fields = ["user_type", "department", "reset_password", "email_address"]
 
 
 class UploadExcelForm(forms.Form):
