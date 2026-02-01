@@ -31,7 +31,8 @@
     <p>Dear Sir / Madam,</p>
 
     <p>
-        The following tasks were submitted to the Authority on (<strong>{{ date }}</strong>)
+        The following task{{ tasks|length|pluralize }} {{ tasks|length|pluralize:"was,were" }} submitted to the
+        Authority today (<strong>{{ date }}</strong>)
         for <strong>{{ department.department_name }}:</strong>
     </p>
     {% include "partials/email_task_list.html" with tasks=tasks %}
