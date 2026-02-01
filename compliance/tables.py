@@ -2,7 +2,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 
 import django_tables2 as tables
-from .models import Template, Task, PublicHoliday, RegulatoryPublication
+from .models import Template, Task, PublicHoliday, RegulatoryPublication, EmailLog
 
 
 class PublicHolidayTable(tables.Table):
@@ -53,7 +53,7 @@ class TaskTable(tables.Table):
         verbose_name="Due Date",
         attrs={
             "td": {
-                "data-sort": lambda record: (record.due_date if record.due_date else "")
+                "data-sort": lambda record: record.due_date if record.due_date else ""
             }
         },
     )
@@ -118,7 +118,7 @@ class TaskApprovalTable(tables.Table):
         verbose_name="Due Date",
         attrs={
             "td": {
-                "data-sort": lambda record: (record.due_date if record.due_date else "")
+                "data-sort": lambda record: record.due_date if record.due_date else ""
             }
         },
     )
@@ -238,3 +238,18 @@ class PublicationTable(tables.Table):
             '<a href="{}" class="btn btn-sm btn-outline-primary">Download</a>',
             value.url,
         )
+
+
+class EmailTable(tables.Table):
+    class Meta:
+        model = EmailLog
+        order_by = ("sent_at",)
+        orderable = False
+        template_name = "django_tables2/bootstrap5.html"
+
+        attrs = {
+            "class": "table table-bordered table-striped table-hover",
+            "id": "emailTable",
+        }
+
+        fields = ("email_type", "subject", "sent_at")
