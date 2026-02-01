@@ -2,7 +2,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 
 import django_tables2 as tables
-from .models import Template, Task, PublicHoliday
+from .models import Template, Task, PublicHoliday, EmailLog
 
 
 class PublicHolidayTable(tables.Table):
@@ -184,3 +184,18 @@ class TaskApprovalTable(tables.Table):
             '<a href="{}" class="btn btn-sm btn-outline-primary">Download</a>',
             value.url,
         )
+
+
+class EmailTable(tables.Table):
+    class Meta:
+        model = EmailLog
+        order_by = ("sent_at",)
+        orderable = False
+        template_name = "django_tables2/bootstrap5.html"
+
+        attrs = {
+            "class": "table table-bordered table-striped table-hover",
+            "id": "emailTable",
+        }
+
+        fields = ("email_type", "subject", "sent_at")

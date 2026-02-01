@@ -19,7 +19,7 @@ from auditlog.context import set_actor
 from django_tables2 import RequestConfig
 from django_tables2.views import SingleTableView
 
-from .models import Template, Task, TaskRemark, PublicHoliday
+from .models import Template, Task, TaskRemark, PublicHoliday, EmailLog
 from .forms import (
     TemplateForm,
     TaskForm,
@@ -30,13 +30,19 @@ from .forms import (
     BoardMeetingBulkForm,
     TaskRevisionForm,
 )
-from .tables import TemplatesTable, TaskTable, TaskApprovalTable, PublicHolidayTable
-
+from .tables import (
+    TemplatesTable,
+    TaskTable,
+    TaskApprovalTable,
+    PublicHolidayTable,
+    EmailTable,
+)
 from .utils import (
     calculate_due_date,
     calculate_conditional_board_meeting_due_date,
     send_email_async,
 )
+from compliance.mail_utils.user_queries import get_active_users_by_department
 
 
 class PublicHolidayList(SingleTableView):
@@ -196,38 +202,28 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         attachments = []
         if task.data_document_template:
             attachments.append(task.data_document_template.path)
+        cm_map = get_active_users_by_department(
+            department_ids=[task.department_id], user_type="dept_agm"
+        )
 
-        # recipients = []
-        # # if task.assigned_to and task.assigned_to.email:
-        # #     recipients.append(task.assigned_to.email)
+        chief_manager_emails = cm_map.get(task.department_id, [])
 
-        # if not recipients:
-        #     return  # avoid mail errors
+        # Base CC list
+        cc_list = ["uicco@uiic.co.in"]
+        cc_list.extend(chief_manager_emails)
+
         send_email_async(
             task=task,
             email_type="task_created",
             subject="Task created",
             body="Here is the message.",
             recipients=task.uiic_emails(),
-            cc=["uicco@uiic.co.in"],
+            cc=cc_list,
             bcc=["44515"],
             attachments=attachments,
             html=html_content,
             user=self.request.user,
         )
-        print("email sent")
-        # send_mail(
-        #     subject=f"New Task Assigned: {task.task_name}",
-        #     message=(
-        #         f"A new task has been created.\n\n"
-        #         f"Title: {task.task_name}\n"p[]
-        #         f"Due date: {task.due_date}\n"
-        #         f"Created by: {task.created_by}\n"
-        #     ),
-        #     from_email="policy.noreply@uiic.co.in",
-        #     recipient_list=["barneedhar@uiic.co.in"],
-        #     fail_silently=False,
-        # )
 
 
 class TaskCreateFromTemplateView(CreateView):
@@ -430,7 +426,10 @@ class TaskDetailView(DetailView):
         RequestConfig(self.request, paginate={"per_page": 100}).configure(table)
 
         context["related_task_table"] = table
-
+        email_query = EmailLog.objects.filter(task=task).order_by("-sent_at")
+        email_table = EmailTable(email_query)
+        RequestConfig(self.request, paginate={"per_page": 100}).configure(email_table)
+        context["email_reminder_table"] = email_table
         task_ct = ContentType.objects.get_for_model(Task)
 
         context["status_audit_logs"] = (
@@ -742,13 +741,22 @@ def task_mark_revision(request, pk):
             if task.data_document:
                 attachments.append(task.data_document.path)
 
+            cm_map = get_active_users_by_department(
+                department_ids=[task.department_id], user_type="dept_agm"
+            )
+
+            chief_manager_emails = cm_map.get(task.department_id, [])
+
+            # Base CC list
+            cc_list = ["uicco@uiic.co.in"]
+            cc_list.extend(chief_manager_emails)
             send_email_async(
                 task=task,
                 email_type="task_revision",
                 subject="This needs revision",
                 body="Here is the message.",
                 recipients=task.uiic_emails(),
-                cc=["uicco@uiic.co.in"],
+                cc=cc_list,
                 bcc=["44515"],
                 attachments=attachments,
                 html=html_content,
@@ -872,6 +880,15 @@ def task_send_reminder_email(request, pk):
         attachments = []
         if task.data_document_template:
             attachments.append(task.data_document_template.path)
+        cm_map = get_active_users_by_department(
+            department_ids=[task.department_id], user_type="dept_agm"
+        )
+
+        chief_manager_emails = cm_map.get(task.department_id, [])
+
+        # Base CC list
+        cc_list = ["uicco@uiic.co.in"]
+        cc_list.extend(chief_manager_emails)
 
         send_email_async(
             task=task,
@@ -879,7 +896,7 @@ def task_send_reminder_email(request, pk):
             subject=f"Reminder #{reminder_count}: This is a reminder email",
             body="Here is the message.",
             recipients=task.uiic_emails(),
-            cc=["uicco@uiic.co.in"],
+            cc=cc_list,
             bcc=["44515"],
             attachments=attachments,
             html=html_content,

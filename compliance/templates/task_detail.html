@@ -7,6 +7,7 @@
 
         {% include "partials/task_detail_display.html" with task=task status_audit_logs=status_audit_logs %}
         {% include "partials/related_items.html" with related_task_table=related_task_table %}
+        {% include "partials/email_reminder_table.html" with email_reminder_table=email_reminder_table %}
         <div class="d-flex justify-content-end align-items-center gap-2">
             {% if can_edit %}
             <a href="{% url 'task_edit' task.pk %}" class="btn btn-warning me-2">
