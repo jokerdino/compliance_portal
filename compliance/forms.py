@@ -4,7 +4,7 @@ from django.forms import inlineformset_factory
 from django.utils import timezone
 
 from .models import Template, Task, TaskRemark, RegulatoryPublication
-from .mail_utils import parse_email_list
+from .mail_utils.parse_emails import parse_email_list
 
 
 TaskRemarkFormSet = inlineformset_factory(

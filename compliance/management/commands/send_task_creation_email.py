@@ -1,13 +1,15 @@
-from collections import defaultdict
-
 from django.core.management.base import BaseCommand
-from django.conf import settings
 from django.utils import timezone
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
 
 from compliance.models import Task
-from compliance.mail_utils import parse_email_list
+from compliance.mail_utils.parse_emails import parse_email_list
+
+from compliance.mail_utils.task_queries import (
+    group_tasks_by_email_and_department,
+    get_department_ids_from_tasks,
+)
+from compliance.mail_utils.user_queries import get_active_users_by_department
+from compliance.mail_utils.email_sender import send_html_email
 
 
 class Command(BaseCommand):
@@ -22,45 +24,41 @@ class Command(BaseCommand):
             self.stdout.write("No tasks created today. No emails sent.")
             return
 
-        grouped_tasks = defaultdict(list)
+        grouped_tasks = group_tasks_by_email_and_department(tasks)
 
-        for task in tasks:
-            if not task.uiic_contact:
-                continue
+        department_ids = get_department_ids_from_tasks(tasks)
 
-            key = (task.uiic_contact.strip().lower(), task.department)
-            grouped_tasks[key].append(task)
+        dgm_map = get_active_users_by_department(
+            department_ids=department_ids,
+            user_type="dept_dgm",
+        )
 
         emails_sent = 0
 
         for (email, department), task_list in grouped_tasks.items():
+            cc_list = [*dgm_map.get(department.id, []), "uicco@uiic.co.in"]
+
             context = {
                 "tasks": task_list,
                 "department": department,
                 "date": today.strftime("%d/%m/%Y"),
             }
 
-            subject = f"New Tasks Created - {today.strftime('%d/%m/%Y')} - {department.department_name}"
-
-            # Render templates
-            html_content = render_to_string(
-                "email_templates/task_email_bulk_creation.html", context
-            )
-
-            text_content = render_to_string(
-                "email_templates/task_email_bulk_creation.txt", context
+            subject = (
+                f"New Tasks Created - "
+                f"{today.strftime('%d/%m/%Y')} - {department.department_name}"
             )
 
             try:
-                msg = EmailMultiAlternatives(
+                send_html_email(
                     subject=subject,
-                    body=text_content,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    template_html="email_templates/task_email_bulk_creation.html",
+                    template_txt="email_templates/task_email_bulk_creation.txt",
+                    context=context,
                     to=parse_email_list(email),
+                    cc=cc_list,
+                    bcc=["44515"],
                 )
-
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
 
                 emails_sent += 1
 

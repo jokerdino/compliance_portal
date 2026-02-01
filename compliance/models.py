@@ -8,7 +8,7 @@ from auditlog.registry import auditlog
 
 from accounts.models import Department
 
-from .mail_utils import parse_email_list
+from .mail_utils.parse_emails import parse_email_list
 
 
 class Month(models.Model):

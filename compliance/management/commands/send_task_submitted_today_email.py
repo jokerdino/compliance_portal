@@ -1,31 +1,28 @@
 from django.core.management.base import BaseCommand
-
 from django.utils import timezone
-
 
 from compliance.models import Task
 from compliance.mail_utils.parse_emails import parse_email_list
 from compliance.mail_utils.task_queries import (
-    get_department_ids_from_tasks,
     group_tasks_by_email_and_department,
+    get_department_ids_from_tasks,
 )
-
 from compliance.mail_utils.user_queries import get_active_users_by_department
 from compliance.mail_utils.email_sender import send_html_email
 
 
 class Command(BaseCommand):
-    help = "Send consolidated HTML emails for tasks due today"
+    help = "Send consolidated HTML emails for tasks submitted today"
 
     def handle(self, *args, **options):
         today = timezone.localdate()
 
         tasks = Task.objects.filter(
-            due_date=today, current_status__in=["pending", "to_be_approved"]
+            current_status="submitted", date_of_document_forwarded=today
         ).select_related("department")
 
         if not tasks.exists():
-            self.stdout.write("No tasks are due today. No emails sent.")
+            self.stdout.write("No tasks submitted today. No emails sent.")
             return
 
         grouped_tasks = group_tasks_by_email_and_department(tasks)
@@ -40,7 +37,6 @@ class Command(BaseCommand):
             department_ids=department_ids,
             user_type="dept_agm",
         )
-
         emails_sent = 0
 
         for (email, department), task_list in grouped_tasks.items():
@@ -55,13 +51,13 @@ class Command(BaseCommand):
                 "date": today.strftime("%d/%m/%Y"),
             }
 
-            subject = f"Tasks due today - {today.strftime('%d/%m/%Y')} - {department.department_name}"
+            subject = f"Tasks submitted - {today.strftime('%d/%m/%Y')} - {department.department_name}"
 
             try:
                 send_html_email(
                     subject=subject,
-                    template_html="email_templates/task_email_bulk_due_today.html",
-                    template_txt="email_templates/task_email_bulk_due_today.txt",
+                    template_html="email_templates/task_email_bulk_submitted.html",
+                    template_txt="email_templates/task_email_bulk_submitted.txt",
                     context=context,
                     to=parse_email_list(email),
                     cc=cc_list,

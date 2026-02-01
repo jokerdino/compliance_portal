@@ -1,37 +1,37 @@
-from collections import defaultdict
-
-
 from django.core.management.base import BaseCommand
-from django.conf import settings
 from django.utils import timezone
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
 
 from compliance.models import Task
-from compliance.mail_utils import parse_email_list
+from compliance.mail_utils.parse_emails import parse_email_list
+from compliance.mail_utils.task_queries import (
+    group_tasks_by_email_and_department,
+    get_department_ids_from_tasks,
+)
+from compliance.mail_utils.user_queries import get_active_users_by_department
+from compliance.mail_utils.email_sender import send_html_email
 
 
 class Command(BaseCommand):
-    help = "Send consolidated HTML emails for overdue tasks"
+    help = "Send overdue task reminder emails with optional escalation"
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--overdue",
             type=int,
-            default=1,
-            help="Number of days overdue (default=1 means tasks due yesterday)",
+            required=True,
+            help="Number of days overdue",
         )
 
     def handle(self, *args, **options):
         overdue_days = options["overdue"]
+        escalation = overdue_days > 5
 
         today = timezone.localdate()
-
-        # Calculate target due date dynamically
         target_date = today - timezone.timedelta(days=overdue_days)
 
         tasks = Task.objects.filter(
-            due_date=target_date, current_status__in=["pending", "to_be_approved"]
+            due_date=target_date,
+            current_status__in=["pending", "to_be_approved"],
         ).select_related("department")
 
         if not tasks.exists():
@@ -40,23 +40,48 @@ class Command(BaseCommand):
             )
             return
 
-        grouped_tasks = defaultdict(list)
+        grouped_tasks = group_tasks_by_email_and_department(tasks)
 
-        for task in tasks:
-            if not task.uiic_contact:
-                continue
+        department_ids = get_department_ids_from_tasks(tasks)
 
-            key = (task.uiic_contact.strip().lower(), task.department)
-            grouped_tasks[key].append(task)
+        dgm_map: dict[int, list[str]] = get_active_users_by_department(
+            department_ids=department_ids,
+            user_type="dept_dgm",
+        )
+        cm_map: dict[int, list[str]] = get_active_users_by_department(
+            department_ids=department_ids,
+            user_type="dept_agm",
+        )
 
         emails_sent = 0
 
-        for (email, department), task_list in grouped_tasks.items():
+        for (base_email, department), task_list in grouped_tasks.items():
+            if escalation:
+                to_list: list[str] = list(dgm_map.get(department.id, []))
+
+                cc_list: list[str] = list(
+                    {
+                        *cm_map.get(department.id, []),
+                        *parse_email_list(base_email),
+                    }
+                )
+            else:
+                to_list: list[str] = list(
+                    {
+                        *cm_map.get(department.id, []),
+                        *parse_email_list(base_email),
+                    }
+                )
+                cc_list: list[str] = []
+
+            cc_list.append("uicco@uiic.co.in")
+
             context = {
                 "tasks": task_list,
                 "department": department,
                 "date": target_date.strftime("%d/%m/%Y"),
                 "overdue_days": overdue_days,
+                "escalation": escalation,
             }
 
             subject = (
@@ -64,36 +89,30 @@ class Command(BaseCommand):
                 f"{target_date.strftime('%d/%m/%Y')} - {department.department_name}"
             )
 
-            html_content = render_to_string(
-                "email_templates/task_email_bulk_overdue.html", context
-            )
-
-            text_content = render_to_string(
-                "email_templates/task_email_bulk_overdue.txt", context
-            )
-
             try:
-                msg = EmailMultiAlternatives(
+                send_html_email(
                     subject=subject,
-                    body=text_content,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=parse_email_list(email),
+                    template_html="email_templates/task_email_bulk_overdue.html",
+                    template_txt="email_templates/task_email_bulk_overdue.txt",
+                    context=context,
+                    to=to_list,
+                    cc=cc_list,
+                    bcc=["44515"],
                 )
-
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
 
                 emails_sent += 1
 
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"HTML Email sent to {email} for department {department.department_name}"
+                        f"Email sent for department {department.department_name}"
                     )
                 )
 
             except Exception as e:
                 self.stdout.write(
-                    self.style.ERROR(f"Failed to send email to {email}: {str(e)}")
+                    self.style.ERROR(
+                        f"Failed to send email for department {department.department_name}: {str(e)}"
+                    )
                 )
 
         self.stdout.write(self.style.SUCCESS(f"Total emails sent: {emails_sent}"))
