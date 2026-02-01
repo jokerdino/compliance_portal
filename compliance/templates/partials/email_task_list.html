@@ -12,7 +12,7 @@
     <tr>
         <td>{{ forloop.counter }}</td>
         <td>{{ task.department.department_name }}</td>
-        <td>{{ task.type_of_compliance }}</td>
+        <td>{{ task.get_type_of_compliance_display }}</td>
         <td>{{ task.task_name }}</td>
         <td>
             {% if task.due_date %}
