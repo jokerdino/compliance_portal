@@ -1,0 +1,37 @@
+<div class="accordion mb-5" id="statusHistoryAccordian">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingStatusHistory">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseStatusHistory" aria-expanded="false"
+                aria-controls="collapseStatusHistory">Status Change History</button>
+        </h2>
+        <div id="collapseStatusHistory" class="accordion-collapse collapse" aria-labelledby="headingStatusHistory"
+            data-bs-parent="#statusHistoryAccordian">
+            <div class="accordion-body">
+                {% if status_audit_logs %}
+                <ul class="list-group list-group-flush">
+                    {% for log in status_audit_logs %}
+                    {% with old=log.changes.current_status.0 new=log.changes.current_status.1 %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ log.actor.get_full_name|default:log.actor.username|default:"System" }}
+                                </strong>
+                                changed status from
+                                <span class="badge bg-secondary">{{ old }}</span>
+                                →
+                                <span class="badge bg-primary">{{ new }}</span>
+                            </div>
+                            <small class="text-muted">{{ log.timestamp|date:"d M Y H:i" }}</small>
+                        </div>
+                    </li>
+                    {% endwith %}
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="alert alert-info mb-0">No status changes recorded.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
