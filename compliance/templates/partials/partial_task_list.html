@@ -16,23 +16,7 @@
         {% endfor %}
     </ul>
 
-    {% if status == "to_be_approved" %}
-    <form method="post">
-        {% csrf_token %}
-
-        <div class="mb-3 d-flex gap-2">
-            <button type="submit" name="action" value="approve" class="btn btn-success">
-                Approve
-            </button>
-
-            <button type="submit" name="action" value="send_back" class="btn btn-warning">
-                Send Back to Pending
-            </button>
-        </div>
-
-        {% render_table table %}
-    </form>
-    {% elif enable_selection %}
+    {% if enable_selection %}
     <form id="task-selection-form" method="post">
         {% csrf_token %}
 

@@ -392,6 +392,7 @@ class TaskDetailView(DetailView):
             .order_by("-timestamp")
         )
         context["can_request_revision"] = task.can_request_revision(user)
+        context["can_mark_as_pending"] = task.can_mark_as_pending(user)
         context["can_edit"] = task.can_edit(user)
         context["revision_form"] = TaskRevisionForm()
 
@@ -509,7 +510,7 @@ class TaskReviewListView(BaseTaskListView):
 
 
 class TaskApprovalPendingListView(BaseTaskListView):
-    table_class = TaskApprovalTable
+    # table_class = TaskApprovalTable
     status = "to_be_approved"
     recurrence_url_name = "task_list_filtered_recurrence_approval_pending"
 
@@ -666,6 +667,7 @@ def task_mark_revision(request, pk):
                     "current_status",
                     "date_of_document_received",
                     "date_of_document_forwarded",
+                    "updated_on",
                 ]
             )
 
@@ -677,6 +679,49 @@ def task_mark_revision(request, pk):
             )
 
             return redirect("task_detail", pk=task.pk)
+    else:
+        return HttpResponseForbidden("Invalid request")
+
+
+@login_required
+def task_mark_pending(request, pk):
+    if request.user.user_type not in ("dept_agm", "dept_dgm"):
+        return HttpResponseForbidden("Not authorized")
+
+    task = get_object_or_404(Task, pk=pk)
+
+    if request.method == "POST":
+        form = TaskRevisionForm(request.POST)
+        if form.is_valid():
+            # Update task
+            task.current_status = "pending"
+
+            task.save(update_fields=["current_status", "updated_on"])
+
+            # Save remark
+            TaskRemark.objects.create(
+                task=task,
+                text=form.cleaned_data["remark"],
+                created_by=request.user,
+            )
+
+            return redirect("task_detail", pk=task.pk)
+    else:
+        return HttpResponseForbidden("Invalid request")
+
+
+@login_required
+def task_mark_approve(request, pk):
+    if request.user.user_type not in ("dept_agm", "dept_dgm"):
+        return HttpResponseForbidden("Not authorized")
+
+    task = get_object_or_404(Task, pk=pk)
+
+    if request.method == "POST":
+        task.current_status = "review"
+        task.save(update_fields=["current_status", "updated_on"])
+
+        return redirect("task_detail", pk=task.pk)
     else:
         return HttpResponseForbidden("Invalid request")
 

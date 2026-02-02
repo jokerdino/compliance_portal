@@ -293,6 +293,18 @@ class Task(models.Model):
             and self.current_status in self.REVIEWABLE_STATUSES
         )
 
+    def can_mark_as_pending(self, user) -> bool:
+        """
+        Can the given user mark this task as pending?
+        """
+        if not user or not user.is_authenticated:
+            return False
+
+        return (
+            user.user_type in ["dept_agm", "dept_dgm"]
+            and self.current_status == "to_be_approved"
+        )
+
     def can_edit(self, user) -> bool:
         """
         Can the given user edit this task?

@@ -139,6 +139,16 @@ urlpatterns = [
         views.task_mark_revision,
         name="task_revise",
     ),
+    path(
+        "tasks/<int:pk>/pending",
+        views.task_mark_pending,
+        name="task_pending",
+    ),
+    path(
+        "tasks/<int:pk>/approve",
+        views.task_mark_approve,
+        name="task_approve",
+    ),
 ]
 
 urlpatterns += [path("", RedirectView.as_view(url="tasks/due-today/", permanent=True))]

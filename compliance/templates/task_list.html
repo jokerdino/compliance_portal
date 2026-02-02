@@ -12,8 +12,7 @@
 {% block scripts %}
 {{ block.super }}
 <script>
-    const TASK_STATUS = "{{ status }}";
-    const orderColumn = TASK_STATUS === "to_be_approved" ? 6 : 5;
+
     new DataTable('#taskTable', {
         layout: {
             top1start: 'pageLength',
@@ -21,11 +20,11 @@
                 buttons: ['copy', 'csv', 'excel', 'pdf']
             },
         },
-        order: [[orderColumn, 'asc']]
+        order: [[$('thead th').length - 4, 'asc']]
     });
 </script>
 
-{% if status == "to_be_approved" or enable_selection %}
+{% if enable_selection %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const selectAll = document.getElementById("select-all");
@@ -42,10 +41,7 @@
             });
         });
     });
-</script>
-{% endif %}
-{% if enable_selection %}
-<script>
+
     document.addEventListener("DOMContentLoaded", function () {
         const modal = document.getElementById("boardMeetingModal");
         const hiddenInput = document.getElementById("selectedTaskIds");

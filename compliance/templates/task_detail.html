@@ -7,11 +7,23 @@
 
         {% include "partials/task_detail_display.html" with task=task status_audit_logs=status_audit_logs %}
         {% include "partials/related_items.html" with related_task_table=related_task_table %}
-        <div class="text-end">
+        <div class="d-flex justify-content-end align-items-center gap-2">
             {% if can_edit %}
             <a href="{% url 'task_edit' task.pk %}" class="btn btn-warning me-2">
                 <i class="bi bi-pencil-square"></i> Edit Task
             </a>
+            {% endif %}
+            {% if can_mark_as_pending %}
+            <form method="post" action="{% url 'task_approve' task.pk %}">
+                {% csrf_token %}
+
+                <button type="submit" class="btn btn-success me-2" onclick="return confirm('Approve this task?');">
+                    Approve
+                </button>
+            </form>
+            <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#revisionModal">
+                <i class="bi bi-pencil-square"></i> Revision required
+            </button>
             {% endif %}
             {% if can_request_revision %}
             <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#revisionModal">
@@ -26,7 +38,7 @@
     </div>
 </div>
 
-{% if can_request_revision %}
+{% if can_mark_as_pending or can_request_revision %}
 {% include "partials/revision_remarks_modal_form.html" %}
 {% endif %}
 
