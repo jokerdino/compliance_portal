@@ -815,12 +815,49 @@ def task_mark_pending(request, pk):
             task.save(update_fields=["current_status", "updated_on"])
 
             # Save remark
+            remarks = form.cleaned_data["remark"]
             TaskRemark.objects.create(
                 task=task,
-                text=form.cleaned_data["remark"],
+                text=remarks,
                 created_by=request.user,
             )
 
+            html_content = render_to_string(
+                "email_templates/task_revision_email_template.html",
+                context={"task": task, "remarks": remarks},
+            )
+            text_content = render_to_string(
+                "email_templates/task_revision_email_template.txt",
+                context={"task": task},
+            )
+
+            attachments = []
+            if task.data_document_template:
+                attachments.append(task.data_document_template.path)
+            if task.data_document:
+                attachments.append(task.data_document.path)
+
+            cm_map = get_active_users_by_department(
+                department_ids=[task.department_id], user_type="dept_agm"
+            )
+
+            chief_manager_emails = cm_map.get(task.department_id, [])
+
+            # Base CC list
+            cc_list = ["uicco@uiic.co.in"]
+            cc_list.extend(chief_manager_emails)
+            send_email_async(
+                task=task,
+                email_type="task_revision",
+                subject=f"IRDAI Compliance task {task.task_name} requires revision",
+                body=text_content,
+                recipients=task.uiic_emails(),
+                cc=cc_list,
+                bcc=["44515"],
+                attachments=attachments,
+                html=html_content,
+                user=request.user,
+            )
             return redirect("task_detail", pk=task.pk)
     else:
         return HttpResponseForbidden("Invalid request")

@@ -252,4 +252,4 @@ class EmailTable(tables.Table):
             "id": "emailTable",
         }
 
-        fields = ("email_type", "subject", "sent_at")
+        fields = ("email_type", "subject", "sent_by", "sent_at")
