@@ -365,14 +365,15 @@ class TaskDetailView(DetailView):
         task = self.object
         user = self.request.user
 
-        qs = (
-            Task.objects.select_related(
-                "department",
+        if not task.template_id:
+            qs = Task.objects.none()
+        else:
+            qs = (
+                Task.objects.select_related("department")
+                .filter(template_id=task.template_id)
+                .exclude(id=task.id)
+                .order_by("due_date")
             )
-            .filter(template_id=task.template_id)
-            .exclude(id=task.id)
-            .order_by("due_date")
-        )
 
         table = TaskTable(qs)
         RequestConfig(self.request, paginate={"per_page": 100}).configure(table)
