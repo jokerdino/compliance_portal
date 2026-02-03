@@ -719,7 +719,10 @@ def task_mark_approve(request, pk):
 
     if request.method == "POST":
         task.current_status = "review"
-        task.save(update_fields=["current_status", "updated_on"])
+        task.date_of_document_received = localdate()
+        task.save(
+            update_fields=["current_status", "updated_on", "date_of_document_received"]
+        )
 
         return redirect("task_detail", pk=task.pk)
     else:
