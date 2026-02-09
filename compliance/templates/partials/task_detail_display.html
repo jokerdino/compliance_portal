@@ -221,6 +221,7 @@
         </div>
     </div>
 </div>
+{% include "partials/task_delay_reason.html" with task=task %}
 {% include "partials/task_status_history.html" with task=task status_audit_logs=status_audit_logs %}
 {% block extra_css %}
 <style>

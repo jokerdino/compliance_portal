@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.conf import settings
 from django.core.validators import MinValueValidator
+from django.utils import timezone
 
 from auditlog.registry import auditlog
 
@@ -246,6 +247,10 @@ class Task(models.Model):
         verbose_name="Date of submission to IRDA",
     )
 
+    reason_for_delay = models.TextField(
+        blank=True, null=True, help_text="Mandatory if task is submitted after due date"
+    )
+
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="tasks_created",
@@ -325,6 +330,11 @@ class Task(models.Model):
 
     def uiic_emails(self) -> list[str]:
         return parse_email_list(self.uiic_contact)
+
+    def is_overdue(self):
+        if not self.due_date:
+            return False
+        return self.due_date < timezone.now().date()
 
     class Meta:
         ordering = ["due_date", "priority"]

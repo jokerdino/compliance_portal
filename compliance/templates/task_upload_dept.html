@@ -21,7 +21,13 @@
                         <div class="col-lg-6">
                             {% bootstrap_field form.data_document layout="vertical" %}
                         </div>
+                        {% if task.is_overdue %}
+                        <div class="form-group">
 
+                            {% bootstrap_field form.reason_for_delay layout="vertical" %}
+
+                        </div>
+                        {% endif %}
                     </div>
 
                     <hr />

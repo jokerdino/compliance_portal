@@ -1,6 +1,7 @@
 from django import forms
 from django.urls import reverse_lazy
 from django.forms import inlineformset_factory
+from django.utils import timezone
 
 from .models import Template, Task, TaskRemark, RegulatoryPublication
 from .mail_utils import parse_email_list
@@ -173,9 +174,28 @@ class TaskForm(forms.ModelForm):
 class DepartmentTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = [
-            "data_document",
-        ]
+        fields = ["data_document", "reason_for_delay"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        due_date = self.instance.due_date
+        # status = cleaned_data.get("current_status")
+        reason = cleaned_data.get("reason_for_delay")
+
+        today = timezone.now().date()
+
+        # Check overdue condition
+        document = cleaned_data.get("data_document")
+        if document and due_date and due_date < today:
+            # If user is submitting the task
+            if not reason:
+                self.add_error(
+                    "reason_for_delay",
+                    "Reason for delay is required because the task is overdue.",
+                )
+
+        return cleaned_data
 
 
 class ComplianceTaskForm(forms.ModelForm):
