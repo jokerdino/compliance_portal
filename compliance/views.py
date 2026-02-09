@@ -27,7 +27,7 @@ from .forms import (
     PublicHolidayUploadForm,
     ComplianceTaskForm,
     BoardMeetingBulkForm,
-    TaskRevisionForm,
+    TaskRemarksForm,
     PublicationForm,
 )
 from .tables import (
@@ -401,7 +401,11 @@ class TaskDetailView(DetailView):
         context["can_request_revision"] = task.can_request_revision(user)
         context["can_mark_as_pending"] = task.can_mark_as_pending(user)
         context["can_edit"] = task.can_edit(user)
-        context["revision_form"] = TaskRevisionForm()
+        context["revision_form"] = TaskRemarksForm(
+            help_text="Please explain why revision is required."
+        )
+        context["approval_form"] = TaskRemarksForm(help_text="Remarks for approval.")
+        context["remarks_form"] = TaskRemarksForm(help_text="Add remarks.")
 
         return context
 
@@ -663,7 +667,7 @@ def task_mark_revision(request, pk):
     task = get_object_or_404(Task, pk=pk)
 
     if request.method == "POST":
-        form = TaskRevisionForm(request.POST)
+        form = TaskRemarksForm(request.POST)
         if form.is_valid():
             # Update task
             task.current_status = "revision"
@@ -698,7 +702,7 @@ def task_mark_pending(request, pk):
     task = get_object_or_404(Task, pk=pk)
 
     if request.method == "POST":
-        form = TaskRevisionForm(request.POST)
+        form = TaskRemarksForm(request.POST)
         if form.is_valid():
             # Update task
             task.current_status = "pending"
@@ -725,13 +729,42 @@ def task_mark_approve(request, pk):
     task = get_object_or_404(Task, pk=pk)
 
     if request.method == "POST":
-        task.current_status = "review"
-        task.date_of_document_received = localdate()
-        task.save(
-            update_fields=["current_status", "updated_on", "date_of_document_received"]
-        )
+        form = TaskRemarksForm(request.POST)
+        if form.is_valid():
+            task.current_status = "review"
+            task.date_of_document_received = localdate()
+            task.save(
+                update_fields=[
+                    "current_status",
+                    "updated_on",
+                    "date_of_document_received",
+                ]
+            )
+            TaskRemark.objects.create(
+                task=task,
+                text=form.cleaned_data["remark"],
+                created_by=request.user,
+            )
 
-        return redirect("task_detail", pk=task.pk)
+            return redirect("task_detail", pk=task.pk)
+    else:
+        return HttpResponseForbidden("Invalid request")
+
+
+@login_required
+def task_add_remarks(request, pk):
+    task = get_object_or_404(Task, pk=pk)
+
+    if request.method == "POST":
+        form = TaskRemarksForm(request.POST)
+        if form.is_valid():
+            TaskRemark.objects.create(
+                task=task,
+                text=form.cleaned_data["remark"],
+                created_by=request.user,
+            )
+
+            return redirect("task_detail", pk=task.pk)
     else:
         return HttpResponseForbidden("Invalid request")
 

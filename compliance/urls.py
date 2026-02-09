@@ -150,6 +150,11 @@ urlpatterns = [
         name="task_approve",
     ),
     path(
+        "tasks/<int:pk>/remarks",
+        views.task_add_remarks,
+        name="task_remarks",
+    ),
+    path(
         "publication/add",
         views.PublicationCreateView.as_view(),
         name="publication_create",

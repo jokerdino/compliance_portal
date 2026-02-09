@@ -229,12 +229,16 @@ class BoardMeetingBulkForm(forms.Form):
     )
 
 
-class TaskRevisionForm(forms.Form):
+class TaskRemarksForm(forms.Form):
     remark = forms.CharField(
         label="Remarks",
         widget=forms.Textarea(attrs={"rows": 4}),
-        help_text="Please explain why revision is required.",
     )
+
+    def __init__(self, *args, help_text=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if help_text:
+            self.fields["remark"].help_text = help_text
 
 
 class PublicationForm(forms.ModelForm):
