@@ -1,0 +1,6 @@
+<!-- custom_status_cell.html -->
+
+<span
+    class="badge {% if record.priority == 3 %}bg-danger{% elif record.priority == 2 %}bg-warning text-dark{% else %}bg-info text-dark{% endif %} fs-6">
+    {{ value }}
+</span>

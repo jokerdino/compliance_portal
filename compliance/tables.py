@@ -75,7 +75,7 @@ class TaskTable(tables.Table):
             }
         },
     )
-
+    priority = tables.TemplateColumn(template_name="partials/custom_priority_cell.html")
     view = tables.Column(empty_values=(), orderable=False)
 
     class Meta:
@@ -88,7 +88,6 @@ class TaskTable(tables.Table):
             "class": "table table-bordered table-striped table-hover",
             "id": "taskTable",
         }
-        # row_attrs = {"class": row_class}
         fields = (
             "type_of_compliance",
             "department",
@@ -141,6 +140,7 @@ class TaskApprovalTable(tables.Table):
         },
     )
     view = tables.Column(empty_values=(), orderable=False)
+    priority = tables.TemplateColumn(template_name="partials/custom_priority_cell.html")
 
     select = tables.CheckBoxColumn(
         accessor="pk",
@@ -160,7 +160,6 @@ class TaskApprovalTable(tables.Table):
             "class": "table table-bordered table-striped table-hover",
             "id": "taskTable",
         }
-        # row_attrs = {"class": row_class}
         fields = (
             "select",
             "type_of_compliance",
