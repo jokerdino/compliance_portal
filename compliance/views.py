@@ -41,7 +41,7 @@ from .tables import (
 from .utils import calculate_due_date, calculate_conditional_board_meeting_due_date
 
 
-class PublicHolidayList(SingleTableView):
+class PublicHolidayList(LoginRequiredMixin, SingleTableView):
     model = PublicHoliday
     table_class = PublicHolidayTable
     template_name = "public_holiday_list.html"
@@ -156,7 +156,7 @@ class TemplateDuplicateView(LoginRequiredMixin, CreateView):
         return data
 
 
-class TemplateDetailView(DetailView):
+class TemplateDetailView(LoginRequiredMixin, DetailView):
     model = Template
     template_name = "template_detail.html"
 
@@ -186,7 +186,7 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class TaskCreateFromTemplateView(CreateView):
+class TaskCreateFromTemplateView(LoginRequiredMixin, CreateView):
     model = Task
     form_class = TaskForm
     template_name = "task_compliance_edit.html"
@@ -340,11 +340,19 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
             return self.form_invalid(form)
 
 
-class TaskDetailView(DetailView):
+class TaskDetailView(LoginRequiredMixin, DetailView):
     model = Task
     template_name = "task_detail.html"
 
     context_object_name = "task"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if not self.object.can_view(request.user):
+            raise PermissionDenied("You are not allowed to view this task.")
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         return (
@@ -600,6 +608,7 @@ class TaskBoardMeetingPendingListView(BaseTaskListView):
         return context
 
 
+@login_required
 def upload_public_holidays(request):
     if request.method == "POST":
         form = PublicHolidayUploadForm(request.POST, request.FILES)
@@ -862,7 +871,7 @@ class PublicationUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class PublicationDetailView(DetailView):
+class PublicationDetailView(LoginRequiredMixin, DetailView):
     model = RegulatoryPublication
     template_name = "publication_detail.html"
 
@@ -870,7 +879,7 @@ class PublicationDetailView(DetailView):
         return super().get_queryset().select_related("created_by", "updated_by")
 
 
-class PublicationListView(SingleTableView):
+class PublicationListView(LoginRequiredMixin, SingleTableView):
     model = RegulatoryPublication
     table_class = PublicationTable
     template_name = "publication_list.html"

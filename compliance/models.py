@@ -310,6 +310,20 @@ class Task(models.Model):
             and self.current_status == "to_be_approved"
         )
 
+    def can_view(self, user) -> bool:
+        if not user or not user.is_authenticated:
+            return False
+        if user.user_type in {"admin", "staff", "viewer"}:
+            return True
+
+        if (
+            user.user_type in {"dept_user", "dept_agm", "dept_dgm"}
+            and self.department_id == user.department_id
+        ):
+            return True
+
+        return False
+
     def can_edit(self, user) -> bool:
         """
         Can the given user edit this task?
@@ -320,6 +334,7 @@ class Task(models.Model):
         if (
             user.user_type in {"dept_user", "dept_agm", "dept_dgm"}
             and self.current_status in self.EDITABLE_STATUSES
+            and self.department_id == user.department_id
         ):
             return True
 
