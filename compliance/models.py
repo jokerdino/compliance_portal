@@ -348,5 +348,50 @@ class TaskRemark(models.Model):
         return f"Remark for {self.task.task_name} at {self.created_at}"
 
 
+class RegulatoryPublication(models.Model):
+    CATEGORY_CHOICES = {
+        "REGULATIONS": "Regulations",
+        "CIRCULAR": "Circular",
+        "NOTIFICATION": "Notification",
+        "GUIDELINES": "Guidelines",
+        "ORDER": "Order",
+        "NOTICE": "Notice",
+        "EXPOSURE_DRAFT": "Exposure Draft",
+        "OTHER_COMMUNICATION": "Other communication",
+    }
+    category = models.CharField(null=False, blank=False, choices=CATEGORY_CHOICES)
+    title = models.CharField(null=False, blank=False)
+    url_of_publication = models.URLField(
+        verbose_name="URL of publication", null=True, blank=True
+    )
+    publication_document = models.FileField(
+        null=True, blank=True, upload_to="regulatory_publication"
+    )
+    date_of_publication = models.DateField(
+        verbose_name="Date of publication in IRDAI website", null=False, blank=False
+    )
+    effective_from = models.DateField(null=False, blank=False)
+    remarks = models.TextField(null=True, blank=True)
+
+    # meta columns
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="publication_created",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="publication_updated",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    updated_on = models.DateTimeField(auto_now=True, null=True)
+
+
 auditlog.register(Template)
 auditlog.register(Task)

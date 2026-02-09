@@ -2,7 +2,7 @@ from django import forms
 from django.urls import reverse_lazy
 from django.forms import inlineformset_factory
 
-from .models import Template, Task, TaskRemark
+from .models import Template, Task, TaskRemark, RegulatoryPublication
 from .mail_utils import parse_email_list
 
 
@@ -215,3 +215,23 @@ class TaskRevisionForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 4}),
         help_text="Please explain why revision is required.",
     )
+
+
+class PublicationForm(forms.ModelForm):
+    success_url = reverse_lazy("publication_list")
+
+    class Meta:
+        model = RegulatoryPublication
+        fields = [
+            "category",
+            "title",
+            "url_of_publication",
+            "publication_document",
+            "date_of_publication",
+            "effective_from",
+            "remarks",
+        ]
+        widgets = {
+            "date_of_publication": forms.DateInput(attrs={"type": "date"}),
+            "effective_from": forms.DateInput(attrs={"type": "date"}),
+        }

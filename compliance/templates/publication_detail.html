@@ -1,0 +1,126 @@
+{% extends "base_generic.html" %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">IRDAI Publication Details</h4>
+
+                    <div>{% if request.user.is_authenticated and request.user.user_type in "admin" %}
+                        <a href="{% url 'publication_update' object.pk %}" class="btn btn-sm btn-light">
+                            Edit
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'publication_list' %}" class="btn btn-sm btn-secondary">
+                            Back to List
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-bordered">
+                        <tbody>
+
+                            <tr>
+                                <th width="30%">Category</th>
+                                <td>{{ object.get_category_display }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>Title</th>
+                                <td>{{ object.title }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>URL of Publication</th>
+                                <td>
+                                    {% if object.url_of_publication %}
+                                    <a href="{{ object.url_of_publication }}" target="_blank">
+                                        {{ object.url_of_publication }}
+                                    </a>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>Publication Document</th>
+                                <td>
+                                    {% if object.publication_document %}
+                                    <a class="btn btn-sm btn-outline-primary"
+                                        href="{{ object.publication_document.url }}" target="_blank">
+                                        Download Document
+                                    </a>
+                                    {% else %}
+                                    No document uploaded
+                                    {% endif %}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>Date of Publication</th>
+                                <td>{{ object.date_of_publication }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>Effective From</th>
+                                <td>{{ object.effective_from }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>Remarks</th>
+                                <td>
+                                    {% if object.remarks %}
+                                    {{ object.remarks|linebreaks }}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if request.user.is_authenticated and request.user.user_type in "admin" %}
+                            <tr>
+                                <th>Created By</th>
+                                <td>
+                                    {{ object.created_by|default:"-" }}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>Created On</th>
+                                <td>{{ object.created_on }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>Updated By</th>
+                                <td>
+                                    {{ object.updated_by|default:"-" }}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>Updated On</th>
+                                <td>{{ object.updated_on }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock content %}

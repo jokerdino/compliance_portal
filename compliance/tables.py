@@ -2,7 +2,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 
 import django_tables2 as tables
-from .models import Template, Task, PublicHoliday
+from .models import Template, Task, PublicHoliday, RegulatoryPublication
 
 
 class PublicHolidayTable(tables.Table):
@@ -177,6 +177,61 @@ class TaskApprovalTable(tables.Table):
         return format_html('<a class="btn btn-sm btn-info" href="{}">View</a>', url)
 
     def render_data_document(self, value):
+        if not value:
+            return "-"
+        return format_html(
+            '<a href="{}" class="btn btn-sm btn-outline-primary">Download</a>',
+            value.url,
+        )
+
+
+class PublicationTable(tables.Table):
+    date_of_publication = tables.DateColumn(
+        format="d/m/Y",
+        verbose_name="Date of publication in IRDAI website",
+        attrs={
+            "td": {
+                "data-sort": lambda record: (
+                    record.date_of_publication if record.date_of_publication else ""
+                )
+            }
+        },
+    )
+    effective_from = tables.DateColumn(
+        format="d/m/Y",
+        attrs={
+            "td": {
+                "data-sort": lambda record: (
+                    record.effective_from if record.effective_from else ""
+                )
+            }
+        },
+    )
+    view = tables.Column(empty_values=(), orderable=False)
+
+    class Meta:
+        model = RegulatoryPublication
+        order_by = "effective_from"
+        orderable = False
+        template_name = "django_tables2/bootstrap5.html"
+        attrs = {
+            "class": "table table-bordered table-striped table-hover",
+            "id": "publicationTable",
+        }
+        fields = (
+            "category",
+            "title",
+            "url_of_publication",
+            "publication_document",
+            "date_of_publication",
+            "effective_from",
+        )
+
+    def render_view(self, record):
+        url = reverse("publication_detail", args=[record.pk])
+        return format_html('<a class="btn btn-sm btn-info" href="{}">View</a>', url)
+
+    def render_publication_document(self, value):
         if not value:
             return "-"
         return format_html(

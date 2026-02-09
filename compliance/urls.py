@@ -149,6 +149,22 @@ urlpatterns = [
         views.task_mark_approve,
         name="task_approve",
     ),
+    path(
+        "publication/add",
+        views.PublicationCreateView.as_view(),
+        name="publication_create",
+    ),
+    path(
+        "publication/<int:pk>",
+        views.PublicationDetailView.as_view(),
+        name="publication_detail",
+    ),
+    path(
+        "publication/<int:pk>/edit",
+        views.PublicationUpdateView.as_view(),
+        name="publication_update",
+    ),
+    path("publication/", views.PublicationListView.as_view(), name="publication_list"),
 ]
 
 urlpatterns += [path("", RedirectView.as_view(url="tasks/due-today/", permanent=True))]

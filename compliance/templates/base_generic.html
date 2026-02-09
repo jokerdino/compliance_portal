@@ -41,7 +41,7 @@
                     {% with url_name=request.resolver_match.url_name filter_val=request.resolver_match.kwargs.filter %}
                     {% if request.user.is_authenticated and request.user.user_type in "viewer admin" %}
                     {% if request.user.is_authenticated and request.user.user_type in "admin" %}
-                    <a class="nav-link" href="{% url 'user_list' %}">User accounts
+                    <a class="nav-link" href="{% url 'user_list' %}">User Admin
                     </a>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if url_name == 'public_holiday_list' or url_name == 'upload_public_holidays' %}active{% endif %}"
@@ -78,11 +78,15 @@
                     </a>
                     <a class="nav-link {% if url_name == 'task_list_board_meeting_pending' %}active{% endif %}"
                         href="{% url 'task_list_board_meeting_pending' %}">
-                        Awaiting Board Meeting Date
+                        Set Board Meeting Date
                         <span class="badge bg-danger">{{ board_meeting_pending_count }}</span>
                     </a>
                     {% endif %}
                     {% endif %}
+                    <a class="nav-link {% if url_name == 'publication_list' %}active{% endif %}"
+                        href=" {% url 'publication_list' %}">IRDAI Publications
+                    </a>
+
                     <a class="nav-link {% if url_name == 'task_list_submitted' or url_name == 'task_list_filtered_recurrence_submitted' %}active{% endif %}"
                         href=" {% url 'task_list_submitted' %}">Submitted items
                     </a>

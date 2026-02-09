@@ -18,7 +18,7 @@ from auditlog.context import set_actor
 from django_tables2 import RequestConfig
 from django_tables2.views import SingleTableView
 
-from .models import Template, Task, TaskRemark, PublicHoliday
+from .models import Template, Task, TaskRemark, PublicHoliday, RegulatoryPublication
 from .forms import (
     TemplateForm,
     TaskForm,
@@ -28,8 +28,15 @@ from .forms import (
     ComplianceTaskForm,
     BoardMeetingBulkForm,
     TaskRevisionForm,
+    PublicationForm,
 )
-from .tables import TemplatesTable, TaskTable, TaskApprovalTable, PublicHolidayTable
+from .tables import (
+    TemplatesTable,
+    TaskTable,
+    TaskApprovalTable,
+    PublicHolidayTable,
+    PublicationTable,
+)
 
 from .utils import calculate_due_date, calculate_conditional_board_meeting_due_date
 
@@ -777,3 +784,61 @@ def bulk_set_board_meeting_date(request):
         )
     messages.success(request, f"{tasks.count()} task(s) updated.")
     return redirect("task_list_board_meeting_pending")
+
+
+class PublicationCreateView(LoginRequiredMixin, CreateView):
+    model = RegulatoryPublication
+    form_class = PublicationForm
+    template_name = "generic_form.html"
+    success_url = reverse_lazy("publication_list")
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.user_type not in {"admin"}:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form_title"] = "Add new IRDAI publication"
+        return context
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        form.instance.updated_by = self.request.user
+        return super().form_valid(form)
+
+
+class PublicationUpdateView(LoginRequiredMixin, UpdateView):
+    model = RegulatoryPublication
+    form_class = PublicationForm
+    template_name = "generic_form.html"
+    success_url = reverse_lazy("publication_list")
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.user_type not in {"admin"}:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form_title"] = "Update IRDAI publication"
+        return context
+
+    def form_valid(self, form):
+        form.instance.updated_by = self.request.user
+        return super().form_valid(form)
+
+
+class PublicationDetailView(DetailView):
+    model = RegulatoryPublication
+    template_name = "publication_detail.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("created_by", "updated_by")
+
+
+class PublicationListView(SingleTableView):
+    model = RegulatoryPublication
+    table_class = PublicationTable
+    template_name = "publication_list.html"
+    table_pagination = False
