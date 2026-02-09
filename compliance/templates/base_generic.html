@@ -41,19 +41,25 @@
                     {% with url_name=request.resolver_match.url_name filter_val=request.resolver_match.kwargs.filter %}
                     {% if request.user.is_authenticated and request.user.user_type in "viewer admin" %}
                     {% if request.user.is_authenticated and request.user.user_type in "admin" %}
-                    <a class="nav-link" href="{% url 'user_list' %}">User Admin
+                    <a class="nav-link" href="{% url 'user_list' %}">User Accounts
                     </a>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if url_name == 'public_holiday_list' or url_name == 'upload_public_holidays' %}active{% endif %}"
+                        <a class="nav-link dropdown-toggle {% if url_name == 'public_holiday_list' or url_name == 'upload_public_holidays' or url_name == 'publication_create' or url_name == 'task_add' %}active{% endif %}"
                             href="
                             #" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Public holiday
+                            Admin
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'public_holiday_list' %}">Public holiday list</a>
                             </li>
                             <li><a class="dropdown-item" href="{% url 'upload_public_holidays' %}">Bulk upload public
                                     holiday</a>
+                            </li>
+                            <div class="dropdown-divider"></div>
+                            <li> <a class="dropdown-item" href="{% url 'task_add' %}">Add adhoc item </a></li>
+                            <div class="dropdown-divider"></div>
+                            <li><a class="dropdown-item" href="{% url 'publication_create' %}">Add new IRDAI
+                                    publication</a>
                             </li>
                         </ul>
                     </li>
@@ -73,9 +79,7 @@
                     </li>
 
                     {% if request.user.is_authenticated and request.user.user_type in "admin" %}
-                    <a class="nav-link {% if url_name == 'task_add' %}active{% endif %}" href="{% url 'task_add' %}">Add
-                        adhoc item
-                    </a>
+
                     <a class="nav-link {% if url_name == 'task_list_board_meeting_pending' %}active{% endif %}"
                         href="{% url 'task_list_board_meeting_pending' %}">
                         Set Board Meeting Date
