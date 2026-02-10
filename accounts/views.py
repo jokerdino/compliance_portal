@@ -136,15 +136,13 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = get_user_model()
-    template_name = "proposal/detail.html"
+    template_name = "accounts/user_detail.html"
 
     def test_func(self):
         return self.request.user.is_staff
 
 
-class UserListView(
-    LoginRequiredMixin, UserPassesTestMixin, SingleTableView
-):  ##Mixin, FilterView):
+class UserListView(LoginRequiredMixin, UserPassesTestMixin, SingleTableView):
     model = get_user_model()
     table_class = UserTable
     template_name = "accounts/list.html"
