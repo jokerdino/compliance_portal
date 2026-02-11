@@ -1,5 +1,3 @@
-import pandas as pd
-
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView
@@ -7,22 +5,27 @@ from django.views.generic.detail import DetailView
 from django.views.generic import FormView
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash, get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
+# from django.contrib.auth.hashers import make_password
+# from django.contrib.auth.models import Group
 
 from django_tables2.views import SingleTableView
 
 from .tables import UserTable, DepartmentTable
-from .forms import CustomLoginForm, UserCreateForm, UserUpdateForm, UploadExcelForm
+from .forms import CustomLoginForm, UserCreateForm, UserUpdateForm  # , UploadExcelForm
 from .models import Department
 
 User = get_user_model()
 
 
-class DepartmentCreateView(CreateView):
+class DepartmentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Department
     fields = ["department_name"]
     success_url = reverse_lazy("department_list")
+    permission_required = "accounts.add_department"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -30,10 +33,11 @@ class DepartmentCreateView(CreateView):
         return context
 
 
-class DepartmentUpdateView(UpdateView):
+class DepartmentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Department
     fields = ["department_name"]
     success_url = reverse_lazy("department_list")
+    permission_required = "accounts.change_department"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -41,10 +45,11 @@ class DepartmentUpdateView(UpdateView):
         return context
 
 
-class DepartmentListView(SingleTableView):
+class DepartmentListView(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
     model = Department
     table_class = DepartmentTable
     table_pagination = False
+    permission_required = "accounts.view_department"
 
 
 class CustomLoginView(LoginView):
@@ -82,14 +87,12 @@ class CustomLogoutView(LoginRequiredMixin, LogoutView):
     next_page = reverse_lazy("login")
 
 
-class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = get_user_model()
     form_class = UserCreateForm
     template_name = "accounts/form.html"
     success_url = reverse_lazy("user_list")
-
-    def test_func(self):
-        return self.request.user.is_staff
+    permission_required = "accounts.add_customuser"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -109,14 +112,12 @@ class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
 
 
-class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class UserUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = get_user_model()
     form_class = UserUpdateForm
     template_name = "accounts/form.html"
     success_url = reverse_lazy("user_list")
-
-    def test_func(self):
-        return self.request.user.is_staff
+    permission_required = "accounts.change_customuser"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -134,71 +135,67 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return super().form_valid(form)
 
 
-class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     model = get_user_model()
     template_name = "accounts/user_detail.html"
-
-    def test_func(self):
-        return self.request.user.is_staff
+    permission_required = "accounts.view_customuser"
 
 
-class UserListView(LoginRequiredMixin, UserPassesTestMixin, SingleTableView):
+class UserListView(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
     model = get_user_model()
     table_class = UserTable
     template_name = "accounts/list.html"
     # paginate = False
     table_pagination = False
-
-    def test_func(self):
-        return self.request.user.is_staff
+    permission_required = "accounts.view_customuser"
 
     def get_queryset(self):
         return get_user_model().objects.filter(is_superuser=False)
 
 
-class UploadExcelView(UserPassesTestMixin, FormView):
-    template_name = "accounts/form.html"
-    form_class = UploadExcelForm
-    success_url = reverse_lazy("user_list")
+# class UploadExcelView(UserPassesTestMixin, FormView):
+#     template_name = "accounts/form.html"
+#     form_class = UploadExcelForm
+#     success_url = reverse_lazy("user_list")
 
-    def test_func(self):
-        return self.request.user.is_staff
+#     def test_func(self):
+#         return self.request.user.groups.filter(name__in=["Viewer", "Admin"]).exists()
 
-    def form_valid(self, form):
-        file = form.cleaned_data["file"]
+#     def form_valid(self, form):
+#         file = form.cleaned_data["file"]
 
-        # ✅ Use pandas to read Excel in memory
-        df = pd.read_excel(
-            file,
-            dtype={"oo_code": str, "ro_code": str, "username": str, "user_type": str},
-        )
+#         # ✅ Use pandas to read Excel in memory
+#         df = pd.read_excel(
+#             file,
+#             dtype={"oo_code": str, "ro_code": str, "username": str, "user_type": str},
+#         )
 
-        # Example: columns must match!
-        # username, oo_code, ro_code, user_type
-        User = get_user_model()
-        existing_usernames = set(User.objects.values_list("username", flat=True))
-        users_to_create = []
-        password = make_password("united")
-        for _, row in df.iterrows():
-            username = row["username"]
-            if username in existing_usernames:
-                continue
+#         # Example: columns must match!
+#         # username, oo_code, ro_code, user_type
+#         User = get_user_model()
+#         existing_usernames = set(User.objects.values_list("username", flat=True))
+#         users_to_create = []
+#         password = make_password("united")
+#         for _, row in df.iterrows():
+#             username = row["username"]
+#             if username in existing_usernames:
+#                 continue
 
-            user = User(
-                username=row["username"],
-                oo_code=row["oo_code"],
-                ro_code=row["ro_code"],
-                user_type=row["user_type"],
-                reset_password=True,
-                password=password,
-            )
-            users_to_create.append(user)
+#             user = User(
+#                 username=row["username"],
+#                 oo_code=row["oo_code"],
+#                 ro_code=row["ro_code"],
+#                 user_type=row["user_type"],
+#                 reset_password=True,
+#                 password=password,
+#             )
+#             users_to_create.append(user)
 
-        User.objects.bulk_create(users_to_create)
+#         User.objects.bulk_create(users_to_create)
 
-        return super().form_valid(form)
+#         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["title"] = "Bulk upload users"
-        return context
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context["title"] = "Bulk upload users"
+#         return context

@@ -13,7 +13,7 @@
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">IRDAI Publication Details</h4>
 
-                    <div>{% if request.user.is_authenticated and request.user.user_type in "admin" %}
+                    <div>{% if request.user.is_authenticated and perms.compliance.change_regulatorypublication %}
                         <a href="{% url 'publication_update' object.pk %}" class="btn btn-sm btn-light">
                             Edit
                         </a>
@@ -86,7 +86,7 @@
                                     {% endif %}
                                 </td>
                             </tr>
-                            {% if request.user.is_authenticated and request.user.user_type in "admin" %}
+                            {% if request.user.is_authenticated and perms.compliance.change_regulatorypublication %}
                             <tr>
                                 <th>Created By</th>
                                 <td>

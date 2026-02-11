@@ -9,6 +9,7 @@ class CustomUserAdmin(UserAdmin):
     list_display = (
         "username",
         "user_type",
+        "department",
         "is_staff",
         "is_active",
     )
@@ -20,7 +21,7 @@ class CustomUserAdmin(UserAdmin):
         (None, {"fields": ("username", "password")}),
         (
             "Roles & Type",
-            {"fields": ("user_type", "reset_password", "last_login")},
+            {"fields": ("user_type", "reset_password", "last_login", "department")},
         ),
         (
             "Permissions",

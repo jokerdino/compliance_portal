@@ -6,7 +6,7 @@ from .views import (
     UserListView,
     UserDetailView,
     UserUpdateView,
-    UploadExcelView,
+    #  UploadExcelView,
     ForcePasswordResetView,
     DepartmentCreateView,
     DepartmentListView,
@@ -25,7 +25,7 @@ urlpatterns = [
         ForcePasswordResetView.as_view(),
         name="password_reset",
     ),
-    path("bulk_upload/", UploadExcelView.as_view(), name="bulk_upload"),
+    # path("bulk_upload/", UploadExcelView.as_view(), name="bulk_upload"),
     path("department/add", DepartmentCreateView.as_view(), name="department_add"),
     path("department/", DepartmentListView.as_view(), name="department_list"),
     path(

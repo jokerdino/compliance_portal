@@ -6,13 +6,14 @@ from .models import Task
 def tasks_count(request):
     """Returns the count of pending tasks globally."""
     today = localdate()
-    DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
+    # DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
     user = request.user
 
     qs = Task.objects.all()
 
     if user.is_authenticated:
-        if user.user_type in DEPT_RESTRICTED_USERS:
+        # if user.user_type in DEPT_RESTRICTED_USERS:
+        if user.has_perm("compliance.can_edit_as_department"):
             qs = qs.filter(department=user.department)
 
     counts = qs.aggregate(

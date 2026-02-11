@@ -53,7 +53,7 @@ class TaskTable(tables.Table):
         verbose_name="Due Date",
         attrs={
             "td": {
-                "data-sort": lambda record: (record.due_date if record.due_date else "")
+                "data-sort": lambda record: record.due_date if record.due_date else ""
             }
         },
     )
@@ -75,7 +75,7 @@ class TaskTable(tables.Table):
             }
         },
     )
-    priority = tables.TemplateColumn(template_name="partials/custom_priority_cell.html")
+    # priority = tables.TemplateColumn(template_name="partials/custom_priority_cell.html")
     view = tables.Column(empty_values=(), orderable=False)
 
     class Meta:
@@ -111,6 +111,22 @@ class TaskTable(tables.Table):
             value.url,
         )
 
+    def render_priority(self, value, record):
+        # Logic translated from custom_status_cell.html
+        if record.priority == 3:
+            bg_class = "bg-danger"
+            text_class = ""
+        elif record.priority == 2:
+            bg_class = "bg-warning"
+            text_class = "text-dark"
+        else:
+            bg_class = "bg-info"
+            text_class = "text-dark"
+
+        return format_html(
+            '<span class="badge {} {} fs-6">{}</span>', bg_class, text_class, value
+        )
+
 
 class TaskApprovalTable(tables.Table):
     due_date = tables.DateColumn(
@@ -118,7 +134,7 @@ class TaskApprovalTable(tables.Table):
         verbose_name="Due Date",
         attrs={
             "td": {
-                "data-sort": lambda record: (record.due_date if record.due_date else "")
+                "data-sort": lambda record: record.due_date if record.due_date else ""
             }
         },
     )
@@ -140,7 +156,7 @@ class TaskApprovalTable(tables.Table):
         },
     )
     view = tables.Column(empty_values=(), orderable=False)
-    priority = tables.TemplateColumn(template_name="partials/custom_priority_cell.html")
+    #    priority = tables.TemplateColumn(template_name="partials/custom_priority_cell.html")
 
     select = tables.CheckBoxColumn(
         accessor="pk",
@@ -182,6 +198,22 @@ class TaskApprovalTable(tables.Table):
         return format_html(
             '<a href="{}" class="btn btn-sm btn-outline-primary">Download</a>',
             value.url,
+        )
+
+    def render_priority(self, value, record):
+        # Logic translated from custom_status_cell.html
+        if record.priority == 3:
+            bg_class = "bg-danger"
+            text_class = ""
+        elif record.priority == 2:
+            bg_class = "bg-warning"
+            text_class = "text-dark"
+        else:
+            bg_class = "bg-info"
+            text_class = "text-dark"
+
+        return format_html(
+            '<span class="badge {} {} fs-6">{}</span>', bg_class, text_class, value
         )
 
 

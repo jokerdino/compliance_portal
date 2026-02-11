@@ -39,8 +39,9 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
                     {% with url_name=request.resolver_match.url_name filter_val=request.resolver_match.kwargs.filter %}
-                    {% if request.user.is_authenticated and request.user.user_type in "viewer admin" %}
-                    {% if request.user.is_authenticated and request.user.user_type in "admin" %}
+                    {% if request.user.is_authenticated %}
+                    {% if perms.compliance.can_edit_as_compliance or perms.compliance.can_view_as_compliance %}
+
                     <a class="nav-link" href="{% url 'user_list' %}">User Accounts
                     </a>
                     <li class="nav-item dropdown">
@@ -52,6 +53,7 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'public_holiday_list' %}">Public holiday list</a>
                             </li>
+                            {% if perms.compliance.can_edit_as_compliance %}
                             <li><a class="dropdown-item" href="{% url 'upload_public_holidays' %}">Bulk upload public
                                     holiday</a>
                             </li>
@@ -61,9 +63,9 @@
                             <li><a class="dropdown-item" href="{% url 'publication_create' %}">Add new IRDAI
                                     publication</a>
                             </li>
+                            {% endif %}
                         </ul>
                     </li>
-                    {% endif %}
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if url_name == 'template_list' or url_name == 'template_add' %}active{% endif %}"
@@ -72,13 +74,11 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'template_list' %}">Templates list</a></li>
-                            {% if request.user.is_authenticated and request.user.user_type in "admin" %}
+                            {% if perms.compliance.add_template %}
                             <li><a class="dropdown-item" href="{% url 'template_add' %}">Add new template</a></li>
                             {% endif %}
                         </ul>
                     </li>
-
-                    {% if request.user.is_authenticated and request.user.user_type in "admin" %}
 
                     <a class="nav-link {% if url_name == 'task_list_board_meeting_pending' %}active{% endif %}"
                         href="{% url 'task_list_board_meeting_pending' %}">
@@ -86,7 +86,7 @@
                         <span class="badge bg-danger">{{ board_meeting_pending_count }}</span>
                     </a>
                     {% endif %}
-                    {% endif %}
+
                     <a class="nav-link {% if url_name == 'publication_list' %}active{% endif %}"
                         href=" {% url 'publication_list' %}">IRDAI Publications
                     </a>
@@ -107,16 +107,13 @@
                     <a class="nav-link {% if url_name == 'task_list_revision' or url_name == 'task_list_filtered_recurrence_revision' %}active{% endif %}"
                         href="{% url 'task_list_revision' %}">To be revised
                         <span class="badge bg-primary">{{ revision_count }}</span></a>
-                    {% if request.user.is_authenticated and request.user.user_type in "dept_agm admin" %}
+
                     <a class="nav-link {% if url_name == 'task_list_approval_pending' or url_name == 'task_list_filtered_recurrence_approval_pending' %}active{% endif %}"
-                        href="{% url 'task_list_approval_pending' %}">Pending for
-                        approval
+                        href="{% url 'task_list_approval_pending' %}">Pending for approval
                         <span class="badge bg-success">{{ approval_pending_count }}</span></a>
-                    {% endif %}
-                    {% if request.user.is_authenticated and request.user.user_type in "staff admin" %}
+
                     <a class="nav-link {% if url_name == 'task_list_review' or url_name == 'task_list_filtered_recurrence_review' %}active{% endif %}"
-                        href="{% url 'task_list_review' %}">Pending for
-                        review
+                        href="{% url 'task_list_review' %}">Pending for review
                         <span class="badge bg-warning text-black">{{ review_count }}</span></a>
                     {% endif %}
                     {% endwith %}

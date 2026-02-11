@@ -35,7 +35,7 @@ class UserTable(tables.Table):
         orderable = False
         fields = (
             "username",
-            "user_type",
+            "groups",
             "department",
             "email_address",
             "reset_password",

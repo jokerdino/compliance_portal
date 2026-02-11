@@ -294,7 +294,7 @@ class Task(models.Model):
             return False
 
         return (
-            user.user_type == "admin"
+            user.has_perm("compliance.can_edit_as_compliance")
             and self.current_status in self.REVIEWABLE_STATUSES
         )
 
@@ -302,22 +302,25 @@ class Task(models.Model):
         """
         Can the given user mark this task as pending?
         """
+
         if not user or not user.is_authenticated:
             return False
 
         return (
-            user.user_type in ["dept_agm", "dept_dgm"]
+            user.has_perm("compliance.can_mark_as_pending")
             and self.current_status == "to_be_approved"
         )
 
     def can_view(self, user) -> bool:
         if not user or not user.is_authenticated:
             return False
-        if user.user_type in {"admin", "staff", "viewer"}:
+        if user.has_perm("compliance.can_view_as_compliance"):
             return True
 
+        if user.has_perm("compliance.can_edit_as_compliance"):
+            return True
         if (
-            user.user_type in {"dept_user", "dept_agm", "dept_dgm"}
+            user.has_perm("compliance.can_edit_as_department")
             and self.department_id == user.department_id
         ):
             return True
@@ -332,16 +335,27 @@ class Task(models.Model):
             return False
 
         if (
-            user.user_type in {"dept_user", "dept_agm", "dept_dgm"}
+            user.has_perm("compliance.can_edit_as_department")
             and self.current_status in self.EDITABLE_STATUSES
             and self.department_id == user.department_id
         ):
             return True
 
-        if user.user_type == "admin" and self.current_status != "submitted":
+        if (
+            user.has_perm("compliance.can_edit_as_compliance")
+            and self.current_status != "submitted"
+        ):
             return True
 
         return False
+
+    def permission_context(self, user):
+        return {
+            "can_view": self.can_view(user),
+            "can_edit": self.can_edit(user),
+            "can_request_revision": self.can_request_revision(user),
+            "can_mark_as_pending": self.can_mark_as_pending(user),
+        }
 
     def uiic_emails(self) -> list[str]:
         return parse_email_list(self.uiic_contact)
@@ -353,6 +367,12 @@ class Task(models.Model):
 
     class Meta:
         ordering = ["due_date", "priority"]
+        permissions = [
+            ("can_mark_as_pending", "Can mark task as approved or pending"),
+            ("can_edit_as_department", "Can edit task as department user"),
+            ("can_edit_as_compliance", "Can edit task as compliance user"),
+            ("can_view_as_compliance", "Can view task as compliance user"),
+        ]
 
 
 class TaskRemark(models.Model):

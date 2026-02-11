@@ -10,8 +10,8 @@ from django.http import HttpResponseForbidden
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 from auditlog.models import LogEntry
 from auditlog.context import set_actor
@@ -41,28 +41,21 @@ from .tables import (
 from .utils import calculate_due_date, calculate_conditional_board_meeting_due_date
 
 
-class PublicHolidayList(LoginRequiredMixin, SingleTableView):
+class PublicHolidayList(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
     model = PublicHoliday
     table_class = PublicHolidayTable
     template_name = "public_holiday_list.html"
     table_pagination = False
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"staff", "admin"}:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
+    permission_required = "compliance.view_publicholiday"
 
 
-class TemplateCreateView(LoginRequiredMixin, CreateView):
+class TemplateCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Template
     form_class = TemplateForm
     template_name = "template_add.html"
     success_url = reverse_lazy("template_list")
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"admin"}:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
+    permission_required = "compliance.add_template"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -75,16 +68,13 @@ class TemplateCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class TemplateUpdateView(LoginRequiredMixin, UpdateView):
+class TemplateUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Template
     form_class = TemplateForm
     template_name = "template_add.html"
     success_url = reverse_lazy("template_list")
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"admin"}:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
+    permission_required = "compliance.change_template"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -96,16 +86,15 @@ class TemplateUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class TemplateDuplicateView(LoginRequiredMixin, CreateView):
+class TemplateDuplicateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Template
     form_class = TemplateForm
     template_name = "template_add.html"
     success_url = reverse_lazy("template_list")
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type != "admin":
-            raise PermissionDenied
+    permission_required = "compliance.add_template"
 
+    def dispatch(self, request, *args, **kwargs):
         self.source_template = get_object_or_404(Template, pk=kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
 
@@ -156,29 +145,21 @@ class TemplateDuplicateView(LoginRequiredMixin, CreateView):
         return data
 
 
-class TemplateDetailView(LoginRequiredMixin, DetailView):
+class TemplateDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     model = Template
     template_name = "template_detail.html"
+    permission_required = "compliance.view_template"
 
     def get_queryset(self):
         return super().get_queryset().select_related("created_by", "updated_by")
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"viewer", "admin"}:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
-
-class TaskCreateView(LoginRequiredMixin, CreateView):
+class TaskCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Task
     form_class = TaskForm
     template_name = "task_compliance_edit.html"
+    permission_required = "compliance.add_task"
     success_url = reverse_lazy("task_list", kwargs={"filter": "due-today"})
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"staff", "admin"}:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
@@ -186,10 +167,13 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class TaskCreateFromTemplateView(LoginRequiredMixin, CreateView):
+class TaskCreateFromTemplateView(
+    LoginRequiredMixin, PermissionRequiredMixin, CreateView
+):
     model = Task
     form_class = TaskForm
     template_name = "task_compliance_edit.html"
+    permission_required = "compliance.add_task"
 
     def dispatch(self, request, *args, **kwargs):
         self.template_obj = get_object_or_404(Template, pk=kwargs["pk"])
@@ -225,9 +209,17 @@ class TaskCreateFromTemplateView(LoginRequiredMixin, CreateView):
 
 class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
+    # permission_required = "compliance.change_task"
 
-    DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
-    COMPLIANCE_DEPT_USERS = {"admin"}
+    # DEPT_RESTRICTED_USERS = {"dept_user", "dept_agm", "dept_dgm"}
+    # COMPLIANCE_DEPT_USERS = {"admin"}
+    # DEPT_RESTRICTED_GROUPS = {
+    #     "Department User",
+    #     "Department AGM",
+    #     "Department DGM",
+    # }
+
+    # COMPLIANCE_GROUPS = {"Admin"}
 
     def get_queryset(self):
         return (
@@ -249,21 +241,32 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
             )
         )
 
-    def dispatch(self, request, *args, **kwargs):
-        self.object = self.get_object()
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
 
-        if not self.object.can_edit(request.user):
+        if not obj.can_edit(self.request.user):
             raise PermissionDenied("You are not allowed to edit this task.")
 
-        return super().dispatch(request, *args, **kwargs)
+        return obj
+
+    # def dispatch(self, request, *args, **kwargs):
+    #     self.object = self.get_object()
+
+    #     if not self.object.can_edit(request.user):
+    #         raise PermissionDenied("You are not allowed to edit this task.")
+
+    #     return super().dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
         user = self.request.user
 
-        if user.user_type in self.DEPT_RESTRICTED_USERS:
+        if user.has_perm("compliance.can_edit_as_department"):
             return DepartmentTaskForm
 
-        return ComplianceTaskForm
+        if user.has_perm("compliance.can_edit_as_compliance"):
+            return ComplianceTaskForm
+
+        raise PermissionDenied
 
     def get_template_names(self):
         """
@@ -271,10 +274,15 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         """
         user = self.request.user
 
-        if user.user_type in self.DEPT_RESTRICTED_USERS:
+        # if user.user_type in self.DEPT_RESTRICTED_USERS:
+        # if user.in_groups(*self.DEPT_RESTRICTED_GROUPS):
+        if user.has_perm("compliance.can_edit_as_department"):
             return ["task_upload_dept.html"]
 
-        return ["task_upload_compliance.html"]
+        if user.has_perm("compliance.can_edit_as_compliance"):
+            return ["task_upload_compliance.html"]
+
+        raise PermissionDenied
 
     def get_success_url(self):
         return reverse_lazy("task_detail", args=[self.object.pk])
@@ -312,13 +320,15 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         if remarks_formset.is_valid():
             self.object = form.save(commit=False)
 
-            if self.request.user.user_type in self.DEPT_RESTRICTED_USERS:
+            # if self.request.user.user_type in self.DEPT_RESTRICTED_USERS:
+            if self.request.user.has_perm("compliance.can_edit_as_department"):
                 data_doc = form.cleaned_data.get("data_document")
 
                 if data_doc:
                     self.object.current_status = "to_be_approved"
 
-            if self.request.user.user_type in self.COMPLIANCE_DEPT_USERS:
+            # if self.request.user.user_type in self.COMPLIANCE_DEPT_USERS:
+            if self.request.user.has_perm("compliance.can_edit_as_compliance"):
                 inbound_email = form.cleaned_data.get("inbound_email_communication")
                 outbound_email = form.cleaned_data.get("outbound_email_communication")
                 outbound_data = form.cleaned_data.get("outbound_data_document")
@@ -343,16 +353,9 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
 class TaskDetailView(LoginRequiredMixin, DetailView):
     model = Task
     template_name = "task_detail.html"
+    # permission_required = "compliance.view_task"
 
     context_object_name = "task"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.object = self.get_object()
-
-        if not self.object.can_view(request.user):
-            raise PermissionDenied("You are not allowed to view this task.")
-
-        return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         return (
@@ -373,6 +376,22 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
                 )
             )
         )
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+
+        if not obj.can_view(self.request.user):
+            raise PermissionDenied("You are not allowed to view this task.")
+
+        return obj
+
+    # def dispatch(self, request, *args, **kwargs):
+    #     self.object = self.get_object()
+
+    #     if not self.object.can_view(request.user):
+    #         raise PermissionDenied("You are not allowed to view this task.")
+
+    #     return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -406,9 +425,10 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
             .select_related("actor")
             .order_by("-timestamp")
         )
-        context["can_request_revision"] = task.can_request_revision(user)
-        context["can_mark_as_pending"] = task.can_mark_as_pending(user)
-        context["can_edit"] = task.can_edit(user)
+        # context["can_request_revision"] = task.can_request_revision(user)
+        # context["can_mark_as_pending"] = task.can_mark_as_pending(user)
+        # context["can_edit"] = task.can_edit(user)
+        context.update(task.permission_context(user))
         context["revision_form"] = TaskRemarksForm(
             help_text="Please explain why revision is required."
         )
@@ -418,16 +438,12 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class TemplateListView(LoginRequiredMixin, SingleTableView):
+class TemplateListView(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
     model = Template
     table_class = TemplatesTable
     template_name = "template_table.html"
     table_pagination = False
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"viewer", "admin"}:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
+    permission_required = "compliance.view_template"
 
     def get_queryset(self):
         return (
@@ -439,17 +455,18 @@ class TemplateListView(LoginRequiredMixin, SingleTableView):
         )
 
 
-class BaseTaskListView(LoginRequiredMixin, SingleTableView):
+class BaseTaskListView(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
     model = Task
     table_class = TaskTable
     table_pagination = False
+    permission_required = "compliance.view_task"
 
     status = None
     template_name = "task_list.html"
     recurrence_url_name = None
     date_filter = None
 
-    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm", "dept_user"}
+    #    DEPT_RESTRICTED_USERS = {"dept_agm", "dept_dgm", "dept_user"}
 
     RECURRENCE_CHOICES = [
         "all",
@@ -477,7 +494,7 @@ class BaseTaskListView(LoginRequiredMixin, SingleTableView):
         qs = Task.objects.select_related("department")
         user = self.request.user
 
-        if user.user_type in self.DEPT_RESTRICTED_USERS:
+        if user.has_perm("compliance.can_edit_as_department"):
             qs = qs.filter(department=user.department)
 
         return qs
@@ -534,8 +551,8 @@ class TaskApprovalPendingListView(BaseTaskListView):
     recurrence_url_name = "task_list_filtered_recurrence_approval_pending"
 
     def post(self, request, *args, **kwargs):
-        if request.user.user_type not in self.DEPT_RESTRICTED_USERS:
-            return self.handle_no_permission()
+        # if not request.user.has_perm("compliance.can_edit_as_department"):
+        #     return self.handle_no_permission()
 
         task_ids = request.POST.getlist("select")
         action = request.POST.get("action")
@@ -609,6 +626,7 @@ class TaskBoardMeetingPendingListView(BaseTaskListView):
 
 
 @login_required
+@permission_required("compliance.add_publicholiday", raise_exception=True)
 def upload_public_holidays(request):
     if request.method == "POST":
         form = PublicHolidayUploadForm(request.POST, request.FILES)
@@ -669,12 +687,14 @@ def upload_public_holidays(request):
 
 
 @login_required
+@permission_required("compliance.can_edit_as_compliance", raise_exception=True)
 def task_mark_revision(request, pk):
-    if request.user.user_type not in ("staff", "admin"):
-        return HttpResponseForbidden("Not authorized")
-
     task = get_object_or_404(Task, pk=pk)
+    if task.current_status not in ["review", "submitted"]:
+        return HttpResponseForbidden("Invalid request")
 
+    if not task.can_request_revision(request.user):
+        return HttpResponseForbidden("Invalid request")
     if request.method == "POST":
         form = TaskRemarksForm(request.POST)
         if form.is_valid():
@@ -704,11 +724,15 @@ def task_mark_revision(request, pk):
 
 
 @login_required
+@permission_required("compliance.can_mark_as_pending", raise_exception=True)
 def task_mark_pending(request, pk):
-    if request.user.user_type not in ("dept_agm", "dept_dgm"):
-        return HttpResponseForbidden("Not authorized")
-
     task = get_object_or_404(Task, pk=pk)
+
+    if not task.can_view(request.user):
+        return HttpResponseForbidden("Invalid request")
+
+    if task.current_status != "to_be_approved":
+        return HttpResponseForbidden("Invalid request")
 
     if request.method == "POST":
         form = TaskRemarksForm(request.POST)
@@ -731,11 +755,15 @@ def task_mark_pending(request, pk):
 
 
 @login_required
+@permission_required("compliance.can_mark_as_pending", raise_exception=True)
 def task_mark_approve(request, pk):
-    if request.user.user_type not in ("dept_agm", "dept_dgm"):
-        return HttpResponseForbidden("Not authorized")
-
     task = get_object_or_404(Task, pk=pk)
+
+    if not task.can_view(request.user):
+        return HttpResponseForbidden("Invalid request")
+
+    if task.current_status != "to_be_approved":
+        return HttpResponseForbidden("Invalid request")
 
     if request.method == "POST":
         form = TaskRemarksForm(request.POST)
@@ -761,9 +789,13 @@ def task_mark_approve(request, pk):
 
 
 @login_required
+@permission_required("compliance.add_taskremark", raise_exception=True)
 def task_add_remarks(request, pk):
     task = get_object_or_404(Task, pk=pk)
-
+    if task.current_status == "submitted":
+        return HttpResponseForbidden("Invalid request")
+    if not task.can_view(request.user):
+        return HttpResponseForbidden("Invalid request")
     if request.method == "POST":
         form = TaskRemarksForm(request.POST)
         if form.is_valid():
@@ -779,6 +811,7 @@ def task_add_remarks(request, pk):
 
 
 @login_required
+@permission_required("compliance.can_edit_as_compliance", raise_exception=True)
 def bulk_set_board_meeting_date(request):
     if request.method != "POST":
         return redirect("task_list_board_meeting_pending")
@@ -828,16 +861,12 @@ def bulk_set_board_meeting_date(request):
     return redirect("task_list_board_meeting_pending")
 
 
-class PublicationCreateView(LoginRequiredMixin, CreateView):
+class PublicationCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = RegulatoryPublication
     form_class = PublicationForm
     template_name = "generic_form.html"
+    permission_required = "compliance.add_regulatorypublication"
     success_url = reverse_lazy("publication_list")
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"admin"}:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -850,16 +879,12 @@ class PublicationCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class PublicationUpdateView(LoginRequiredMixin, UpdateView):
+class PublicationUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = RegulatoryPublication
     form_class = PublicationForm
     template_name = "generic_form.html"
+    permission_required = "compliance.change_regulatorypublication"
     success_url = reverse_lazy("publication_list")
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type not in {"admin"}:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -871,16 +896,18 @@ class PublicationUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class PublicationDetailView(LoginRequiredMixin, DetailView):
+class PublicationDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     model = RegulatoryPublication
     template_name = "publication_detail.html"
+    permission_required = "compliance.view_regulatorypublication"
 
     def get_queryset(self):
         return super().get_queryset().select_related("created_by", "updated_by")
 
 
-class PublicationListView(LoginRequiredMixin, SingleTableView):
+class PublicationListView(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
     model = RegulatoryPublication
     table_class = PublicationTable
     template_name = "publication_list.html"
     table_pagination = False
+    permission_required = "compliance.view_regulatorypublication"

@@ -115,11 +115,6 @@ urlpatterns = [
         name="upload_public_holidays",
     ),
     path(
-        "templates/<int:pk>/",
-        views.TemplateDetailView.as_view(),
-        name="template_detail",
-    ),
-    path(
         "templates/<int:pk>/create-task/",
         views.TaskCreateFromTemplateView.as_view(),
         name="task_create_from_template",

@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 
 
 class CustomLoginForm(AuthenticationForm):
@@ -23,16 +24,33 @@ class CustomLoginForm(AuthenticationForm):
 
 
 class UserCreateForm(forms.ModelForm):
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        required=True,
+        widget=forms.CheckboxSelectMultiple,
+    )
+
     class Meta:
         model = get_user_model()
-        fields = ["username", "user_type", "department", "email_address"]
+        fields = ["username", "groups", "department", "email_address"]
 
 
 class UserUpdateForm(forms.ModelForm):
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        required=True,
+        widget=forms.CheckboxSelectMultiple,
+    )
+
     class Meta:
         model = get_user_model()
-        fields = ["user_type", "department", "reset_password", "email_address"]
+        fields = [
+            "department",
+            "groups",
+            "reset_password",
+            "email_address",
+        ]
 
 
-class UploadExcelForm(forms.Form):
-    file = forms.FileField()
+# class UploadExcelForm(forms.Form):
+#     file = forms.FileField()

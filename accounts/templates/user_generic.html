@@ -24,7 +24,7 @@
 
 <body>
     {% block navbar %}
-    {% if user.is_staff %}
+    {% if user.is_authenticated and perms.accounts.view_customuser %}
     <!-- djlint:off -->
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #d0e7f9;">
         <!-- djlint:on -->
@@ -46,12 +46,16 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'department_list' %}">Department list</a></li>
+                            {% if perms.accounts.add_department %}
                             <li><a class="dropdown-item" href="{% url 'department_add' %}">Add new department</a></li>
+                            {% endif %}
                         </ul>
+
                     </li>
                     <a class="nav-link" href="{% url 'user_list' %}">User list</a>
+                    {% if perms.accounts.add_customuser %}
                     <a class="nav-link" href="{% url 'user_create' %}">Add new user</a>
-                    {# <a class="nav-link" href="{% url 'bulk_upload' %}">Bulk upload users</a> #}
+                    {% endif %}
                     {% endwith %}
                 </div>
             </div>
