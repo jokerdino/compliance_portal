@@ -8,12 +8,14 @@ class CustomUserAdmin(UserAdmin):
     model = CustomUser
     list_display = (
         "username",
-        "user_type",
         "department",
         "is_staff",
         "is_active",
     )
-    list_filter = ("is_staff", "is_active", "user_type")
+    list_filter = (
+        "is_staff",
+        "is_active",
+    )
     search_fields = ("username",)
     ordering = ("username",)
 
@@ -21,7 +23,7 @@ class CustomUserAdmin(UserAdmin):
         (None, {"fields": ("username", "password")}),
         (
             "Roles & Type",
-            {"fields": ("user_type", "reset_password", "last_login", "department")},
+            {"fields": ("reset_password", "last_login", "department")},
         ),
         (
             "Permissions",

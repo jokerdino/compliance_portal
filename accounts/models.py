@@ -49,12 +49,12 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=150, unique=True)
-    user_type = models.CharField(
-        choices=USERTYPE,
-        max_length=50,
-        blank=True,
-        null=True,
-    )
+    # user_type = models.CharField(
+    #     choices=USERTYPE,
+    #     max_length=50,
+    #     blank=True,
+    #     null=True,
+    # )
     department = models.ForeignKey(Department, on_delete=models.PROTECT, null=True)
     email_address = models.EmailField(
         max_length=254, unique=False, null=True, blank=True
@@ -74,4 +74,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.username
 
     class Meta:
-        ordering = ["department", "user_type", "username"]
+        ordering = ["department", "username"]

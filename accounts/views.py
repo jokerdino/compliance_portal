@@ -140,6 +140,9 @@ class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     template_name = "accounts/user_detail.html"
     permission_required = "accounts.view_customuser"
 
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("groups", "department")
+
 
 class UserListView(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
     model = get_user_model()
@@ -150,7 +153,11 @@ class UserListView(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView)
     permission_required = "accounts.view_customuser"
 
     def get_queryset(self):
-        return get_user_model().objects.filter(is_superuser=False)
+        return (
+            get_user_model()
+            .objects.filter(is_superuser=False)
+            .prefetch_related("groups", "department")
+        )
 
 
 # class UploadExcelView(UserPassesTestMixin, FormView):
