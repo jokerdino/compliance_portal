@@ -11,6 +11,7 @@ class CustomUserAdmin(UserAdmin):
         "department",
         "is_staff",
         "is_active",
+        "get_groups",
     )
     list_filter = (
         "is_staff",
@@ -53,6 +54,13 @@ class CustomUserAdmin(UserAdmin):
             },
         ),
     )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.prefetch_related("groups", "department")
+
+    def get_groups(self, obj):
+        return ", ".join(group.name for group in obj.groups.all())
 
 
 admin.site.register(CustomUser, CustomUserAdmin)

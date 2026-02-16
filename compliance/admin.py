@@ -13,8 +13,14 @@ from .models import (
 
 
 admin.site.register(Month)
-admin.site.register(TaskRemark)
 admin.site.register(RegulatoryPublication)
+
+
+@admin.register(TaskRemark)
+class TaskRemarkAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.prefetch_related("task")
 
 
 @admin.register(PublicHoliday)
