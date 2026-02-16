@@ -494,7 +494,7 @@ class BaseTaskListView(LoginRequiredMixin, PermissionRequiredMixin, SingleTableV
         qs = Task.objects.select_related("department")
         user = self.request.user
 
-        if user.has_perm("compliance.can_edit_as_department"):
+        if user.has_perm("compliance.can_edit_as_department") and not user.is_superuser:
             qs = qs.filter(department=user.department)
 
         return qs

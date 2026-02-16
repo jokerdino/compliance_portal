@@ -13,7 +13,7 @@ def tasks_count(request):
 
     if user.is_authenticated:
         # if user.user_type in DEPT_RESTRICTED_USERS:
-        if user.has_perm("compliance.can_edit_as_department"):
+        if user.has_perm("compliance.can_edit_as_department") and not user.is_superuser:
             qs = qs.filter(department=user.department)
 
     counts = qs.aggregate(
